@@ -15,7 +15,6 @@
     editClass(item) {
         this.isEdit = true;
         this.actionUrl = '{{ url('admin/classes') }}/' + item.id;
-        // Sesuaikan dengan nama kolom dari database
         this.kelas = item.grade; 
         this.jurusan = item.major;
         this.nama_kelas = item.class_name;
@@ -58,7 +57,6 @@
                     <td class="p-4 text-center font-bold text-gray-500">
                         {{ $classes->firstItem() + $index }}
                     </td>
-                    <!-- PANGGIL MENGGUNAKAN NAMA KOLOM DATABASE -->
                     <td class="p-4 font-semibold text-gray-700">{{ $cls->grade }}</td>
                     <td class="p-4 font-semibold text-gray-700">{{ $cls->major }}</td>
                     <td class="p-4">
@@ -109,7 +107,6 @@
 
                 <div>
                     <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Tingkat Kelas</label>
-                    <!-- Karena di migration kamu pakai Enum ('X', 'XI', 'XII'), disarankan pakai select -->
                     <select name="kelas" x-model="kelas" required class="w-full p-2.5 border rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white">
                         <option value="">-- Pilih Tingkat --</option>
                         <option value="X">X (Sepuluh)</option>

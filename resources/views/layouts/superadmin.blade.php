@@ -17,21 +17,39 @@
                     SUPER ADMIN
                 </div>
                 <nav class="mt-5 px-4 space-y-2">
-                    <a href="{{ route('superadmin.dashboard') }}" class="flex items-center px-4 py-3 rounded-lg hover:bg-slate-800 transition">
+                    <!-- Dashboard -->
+                    <a href="{{ route('superadmin.dashboard') }}" 
+                       class="flex items-center px-4 py-3 rounded-lg transition {{ request()->routeIs('superadmin.dashboard') ? 'bg-blue-600 text-white font-bold' : 'hover:bg-slate-800 text-slate-300' }}">
                         <i class="fas fa-home w-6"></i> <span>Dashboard</span>
                     </a>
-                    <a href="{{ route('superadmin.users.index') }}" class="flex items-center px-4 py-3 rounded-lg hover:bg-slate-800 transition">
+
+                    <!-- Kelola Admin -->
+                    <a href="{{ route('superadmin.users.index') }}" 
+                       class="flex items-center px-4 py-3 rounded-lg transition {{ request()->routeIs('superadmin.users.*') ? 'bg-blue-600 text-white font-bold' : 'hover:bg-slate-800 text-slate-300' }}">
                         <i class="fas fa-user-shield w-6"></i> <span>Kelola Admin</span>
                     </a>
-                    <a href="{{ route('superadmin.classes.index') }}" class="flex items-center px-4 py-3 rounded-lg hover:bg-slate-800 transition">
+
+                    <!-- Master Kelas -->
+                    <a href="{{ route('superadmin.classes.index') }}" 
+                       class="flex items-center px-4 py-3 rounded-lg transition {{ request()->routeIs('superadmin.classes.*') ? 'bg-blue-600 text-white font-bold' : 'hover:bg-slate-800 text-slate-300' }}">
                         <i class="fas fa-school w-6"></i> <span>Master Kelas</span>
                     </a>
-                    <a href="{{ route('superadmin.settings.index') }}" class="flex items-center px-4 py-3 rounded-lg hover:bg-slate-800 transition">
+
+                    <!-- Pemeliharaan Database & System -->
+                    <a href="{{ route('superadmin.database.index') }}" 
+                       class="flex items-center px-4 py-3 rounded-lg transition {{ request()->routeIs('superadmin.database.*') ? 'bg-blue-600 text-white font-bold' : 'hover:bg-slate-800 text-slate-300' }}">
+                        <i class="fas fa-database w-6"></i> <span>Database & System</span>
+                    </a>
+
+                    <!-- Pengaturan -->
+                    <a href="{{ route('superadmin.settings.index') }}" 
+                       class="flex items-center px-4 py-3 rounded-lg transition {{ request()->routeIs('superadmin.settings.*') ? 'bg-blue-600 text-white font-bold' : 'hover:bg-slate-800 text-slate-300' }}">
                         <i class="fas fa-cog w-6"></i> <span>Pengaturan</span>
                     </a>
                 </nav>
             </div>
             
+            <!-- Logout Button -->
             <div class="p-4 border-t border-slate-800">
                 <form action="{{ route('logout') }}" method="POST">
                     @csrf

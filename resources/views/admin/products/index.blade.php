@@ -4,7 +4,47 @@
 @section('page_title', 'Kelola Data Barang & Stok')
 
 @section('content')
-<div x-data="{ openModal: false, isEdit: false, formAction: '', name: '', category_id: '', barcode: '', size: 'All Size', buy_price: '', sell_price: '', stock: '', unit: 'Pcs' }">
+<div x-data="{ 
+    openModal: false, 
+    isEdit: false, 
+    formAction: '', 
+    name: '', 
+    category_id: '', 
+    barcode: '', 
+    size: 'All Size', 
+    buy_price: '', 
+    sell_price: '', 
+    stock: '', 
+    unit: 'Pcs',
+
+    editProduct(product, updateUrl) {
+        this.isEdit = true;
+        this.formAction = updateUrl;
+        this.name = product.name;
+        this.category_id = product.category_id;
+        this.barcode = product.barcode ?? '';
+        this.size = product.size ?? 'All Size';
+        this.buy_price = product.buy_price;
+        this.sell_price = product.sell_price;
+        this.stock = product.stock;
+        this.unit = product.unit;
+        this.openModal = true;
+    },
+
+    addProduct(storeUrl) {
+        this.isEdit = false;
+        this.formAction = storeUrl;
+        this.name = '';
+        this.category_id = '';
+        this.barcode = '';
+        this.size = 'All Size';
+        this.buy_price = '';
+        this.sell_price = '';
+        this.stock = '';
+        this.unit = 'Pcs';
+        this.openModal = true;
+    }
+}">
 
     <!-- HEADER & BUTTON TAMBAH -->
     <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
@@ -25,7 +65,7 @@
             </button>
         </form>
 
-        <button @click="openModal = true; isEdit = false; formAction = '{{ route('admin.products.store') }}'; name = ''; category_id = ''; barcode = ''; size = 'All Size'; buy_price = ''; sell_price = ''; stock = ''; unit = 'Pcs'" 
+        <button @click="addProduct('{{ route('admin.products.store') }}')" 
             class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-lg text-sm transition flex items-center gap-2">
             <i class="fas fa-plus"></i> Tambah Barang Baru
         </button>
@@ -65,7 +105,7 @@
                         </span>
                     </td>
                     <td class="p-4 text-center space-x-2">
-                        <button @click="openModal = true; isEdit = true; formAction = '{{ route('admin.products.update', $product->id) }}'; name = '{{ $product->name }}'; category_id = '{{ $product->category_id }}'; barcode = '{{ $product->barcode }}'; size = '{{ $product->size }}'; buy_price = '{{ $product->buy_price }}'; sell_price = '{{ $product->sell_price }}'; stock = '{{ $product->stock }}'; unit = '{{ $product->unit }}'" 
+                        <button @click="editProduct({{ json_encode($product) }}, '{{ route('admin.products.update', $product->id) }}')" 
                             class="px-3 py-1 bg-amber-500 text-white rounded hover:bg-amber-600 text-xs font-bold transition">
                             <i class="fas fa-edit"></i> Edit
                         </button>

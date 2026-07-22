@@ -15,7 +15,7 @@
 
     <div class="bg-white p-6 rounded-xl shadow border-l-4 border-amber-500 flex items-center justify-between">
         <div>
-            <p class="text-xs font-bold text-gray-500 uppercase">Stok Menipis (<=5)</p>
+            <p class="text-xs font-bold text-gray-500 uppercase">Stok Menipis (&lt;=5)</p>
             <p class="text-2xl font-bold text-gray-800">{{ $lowStockProducts->count() }}</p>
         </div>
         <i class="fas fa-exclamation-triangle text-amber-500 text-3xl"></i>
