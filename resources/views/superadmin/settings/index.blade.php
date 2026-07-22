@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.superadmin')
 
 @section('title', 'Pengaturan Aplikasi')
 @section('page_title', 'Pengaturan Profil Sekolah')

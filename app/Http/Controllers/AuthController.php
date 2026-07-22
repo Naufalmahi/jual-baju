@@ -92,7 +92,7 @@ class AuthController extends Controller
         return redirect()->route('login.siswa')->with('success', 'Berhasil keluar.');
     }
 
-    private function redirectUserByRole($role)
+    private function redirectUserByRole(string $role)
     {
         return match ($role) {
             'super_admin' => redirect()->route('superadmin.dashboard'),

@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.superadmin')
 
 @section('title', 'Master Kelas')
 @section('page_title', 'Kelola Data Kelas & Jurusan')

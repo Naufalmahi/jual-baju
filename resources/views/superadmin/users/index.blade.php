@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.superadmin')
 
 @section('title', 'Kelola Admin Toko')
 @section('page_title', 'Kelola Akun Admin Toko / Koperasi')
