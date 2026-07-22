@@ -25,7 +25,7 @@ class DashboardController extends Controller
         $mKasir      = Setting::where('key', 'maintenance_kasir')->value('value') ?? '0';
         $mSiswa      = Setting::where('key', 'maintenance_siswa')->value('value') ?? '0';
 
-        return view('admin.dashboard', \compact(
+        return view('admin.dashboard', compact(
             'totalProducts',
             'lowStockProducts',
             'totalKasir',

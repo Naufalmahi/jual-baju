@@ -7,6 +7,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class DatabaseController extends Controller
 {
@@ -16,9 +19,45 @@ class DatabaseController extends Controller
         return view('superadmin.database.index');
     }
 
-    // 1. Download Backup Database (.sql)
+    // 1. Download Backup Database (.sql) - Dengan Proteksi Berlapis
     public function downloadBackup()
     {
+        // ==========================================
+        // LAYER 1: CEK ROLE & AUTHENTICATION GANDA
+        // ==========================================
+        if (!Auth::check() || Auth::user()->role !== 'super_admin') {
+            Log::warning('Akses terlarang mencoba mengunduh backup DB dari User ID: ' . (Auth::id() ?? 'Guest'));
+            abort(403, 'Akses Ditolak! Anda tidak memiliki wewenang untuk mengunduh backup database.');
+        }
+
+        // ==========================================
+        // LAYER 2: CEK ALLOWED IP (HANYA DARI LOCALHOST)
+        // ==========================================
+        $allowedIps = ['127.0.0.1', '::1'];
+        if (!in_array(request()->ip(), $allowedIps)) {
+            Log::alert('Upaya backup database dari IP tidak terdaftar: ' . request()->ip() . ' oleh User: ' . Auth::user()->name);
+            abort(403, 'Akses Ditolak! Fitur ini hanya dapat diakses dari jaringan lokal server.');
+        }
+
+        // ==========================================
+        // LAYER 3: RATE LIMITING / COOLDOWN (MAX 1x PER 1 MENIT)
+        // ==========================================
+        $cacheKey = 'backup_cooldown_' . Auth::id();
+        if (Cache::has($cacheKey)) {
+            return back()->with('error', 'Terlalu banyak permintaan! Harap tunggu 1 menit sebelum melakukan backup kembali.');
+        }
+
+        // Lock cooldown selama 60 detik
+        Cache::put($cacheKey, true, 60);
+
+        // ==========================================
+        // LAYER 4: AUDIT LOGGING (JEJAK DIGITAL)
+        // ==========================================
+        Log::info('Super Admin [' . Auth::user()->name . '] melakukan backup database pada IP: ' . request()->ip());
+
+        // ==========================================
+        // PROSES DUMP DATABASE
+        // ==========================================
         $dbName = env('DB_DATABASE');
         $dbUser = env('DB_USERNAME');
         $dbPass = env('DB_PASSWORD');
@@ -29,7 +68,7 @@ class DatabaseController extends Controller
 
         // Jika pakai Laragon atau lokasi XAMPP di D:
         if (!file_exists($mysqldumpPath)) {
-            $possiblePaths = [                
+            $possiblePaths = [        
                 'D:\laragon\bin\mysql\mysql-8.0.30-winx64\bin\mysqldump.exe',
                 'D:\laragon\bin\mysql\mysql-5.7.33-winx64\bin\mysqldump.exe',
             ];
@@ -69,6 +108,10 @@ class DatabaseController extends Controller
     // 2. Clear Application Cache
     public function clearCache()
     {
+        if (!Auth::check() || Auth::user()->role !== 'super_admin') {
+            abort(403);
+        }
+
         Artisan::call('cache:clear');
         Artisan::call('config:clear');
         Artisan::call('route:clear');
@@ -80,6 +123,10 @@ class DatabaseController extends Controller
     // 3. Reset Data Transaksi (Pergantian Tahun Ajaran)
     public function resetTransactions(Request $request)
     {
+        if (!Auth::check() || Auth::user()->role !== 'super_admin') {
+            abort(403);
+        }
+
         $request->validate([
             'confirm_text' => 'required|in:HAPUS TRANSAKSI',
         ], [
@@ -99,6 +146,8 @@ class DatabaseController extends Controller
             DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
             DB::commit();
+
+            Log::alert('Super Admin [' . Auth::user()->name . '] melakukan RESET DATA TRANSAKSI dari IP: ' . request()->ip());
 
             return back()->with('success', 'Seluruh data transaksi lama berhasil di-reset!');
         } catch (\Exception $e) {
