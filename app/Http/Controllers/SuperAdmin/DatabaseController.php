@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\File;
 
 class DatabaseController extends Controller
 {
@@ -56,21 +57,21 @@ class DatabaseController extends Controller
         Log::info('Super Admin [' . Auth::user()->name . '] melakukan backup database pada IP: ' . request()->ip());
 
         // ==========================================
-        // PROSES DUMP DATABASE
+        // PROSES DUMP DATABASE (Aman dengan config())
         // ==========================================
-        $dbName = env('DB_DATABASE');
-        $dbUser = env('DB_USERNAME');
-        $dbPass = env('DB_PASSWORD');
-        $dbHost = env('DB_HOST', '127.0.0.1');
+        $dbName = config('database.connections.mysql.database');
+        $dbUser = config('database.connections.mysql.username');
+        $dbPass = config('database.connections.mysql.password');
+        $dbHost = config('database.connections.mysql.host', '127.0.0.1');
 
-        // Default path mysqldump di XAMPP / Laragon Windows
+        // Path mysqldump dinamis
         $mysqldumpPath = 'C:\xampp\mysql\bin\mysqldump.exe';
 
-        // Jika pakai Laragon atau lokasi XAMPP di D:
         if (!file_exists($mysqldumpPath)) {
             $possiblePaths = [        
                 'D:\laragon\bin\mysql\mysql-8.0.30-winx64\bin\mysqldump.exe',
                 'D:\laragon\bin\mysql\mysql-5.7.33-winx64\bin\mysqldump.exe',
+                'C:\laragon\bin\mysql\mysql-8.0.30-winx64\bin\mysqldump.exe',
             ];
 
             foreach ($possiblePaths as $path) {
@@ -82,11 +83,8 @@ class DatabaseController extends Controller
         }
 
         $fileName = 'backup_' . $dbName . '_' . date('Y-m-d_H-i-s') . '.sql';
-
-        // Format Password (jika di phpMyAdmin/XAMPP defaultnya kosong, aman)
         $passwordOption = !empty($dbPass) ? "--password=\"{$dbPass}\"" : "";
 
-        // Susun command dengan tanda petik ganda pada path
         $command = "\"{$mysqldumpPath}\" --user={$dbUser} {$passwordOption} --host={$dbHost} {$dbName}";
 
         $output = [];
@@ -102,10 +100,67 @@ class DatabaseController extends Controller
             ]);
         }
 
-        return back()->with('error', 'Gagal backup! Path mysqldump tidak ditemukan di ' . $mysqldumpPath);
+        return back()->with('error', 'Gagal backup! Executable mysqldump tidak ditemukan atau akses ditolak.');
     }
 
-    // 2. Clear Application Cache
+    // 2. RESTORE DATABASE (UPLOAD FILE .SQL)
+    public function restoreBackup(Request $request)
+    {
+        // Check Auth & Role
+        if (!Auth::check() || Auth::user()->role !== 'super_admin') {
+            abort(403, 'Akses Ditolak!');
+        }
+
+        // Validasi Strict File Upload
+        $request->validate([
+            'backup_file' => 'required|file|max:20480', // Max 20MB
+        ], [
+            'backup_file.required' => 'Pilih file backup (.sql) terlebih dahulu.',
+            'backup_file.max' => 'Ukuran file backup maksimal 20 MB.',
+        ]);
+
+        $file = $request->file('backup_file');
+        
+        // Verifikasi Ekstensi File Manual demi Keamanan
+        $extension = strtolower($file->getClientOriginalExtension());
+        if ($extension !== 'sql') {
+            return back()->with('error', 'Format file tidak valid! Wajib mengunggah file ber-ekstensi .sql');
+        }
+
+        try {
+            $sqlContent = File::get($file->getRealPath());
+
+            if (empty(trim($sqlContent))) {
+                return back()->with('error', 'File SQL kosong atau tidak memiliki query valid!');
+            }
+
+            // Jalankan Restore
+            DB::beginTransaction();
+            
+            // Matikan dulu Foreign Key Checks agar runtutan tabel tidak error
+            DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+            
+            // Eksekusi seluruh isi SQL
+            DB::unprepared($sqlContent);
+            
+            DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+            DB::commit();
+
+            // Clear Cache Otomatis setelah Restore agar data terbaru langsung terbaca
+            Artisan::call('cache:clear');
+            Artisan::call('view:clear');
+
+            Log::alert('Super Admin [' . Auth::user()->name . '] melakukan RESTORE DATABASE dari IP: ' . request()->ip());
+
+            return back()->with('success', 'Database berhasil di-restore kembali ke kondisi backup!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+            return back()->with('error', 'Gagal merestore database: ' . $e->getMessage());
+        }
+    }
+
+    // 3. Clear Application Cache
     public function clearCache()
     {
         if (!Auth::check() || Auth::user()->role !== 'super_admin') {
@@ -120,7 +175,7 @@ class DatabaseController extends Controller
         return back()->with('success', 'Berhasil membersihkan cache sistem (Cache, Config, Route, & View)!');
     }
 
-    // 3. Reset Data Transaksi (Pergantian Tahun Ajaran)
+    // 4. Reset Data Transaksi (Pergantian Tahun Ajaran)
     public function resetTransactions(Request $request)
     {
         if (!Auth::check() || Auth::user()->role !== 'super_admin') {
@@ -136,10 +191,8 @@ class DatabaseController extends Controller
         try {
             DB::beginTransaction();
 
-            // Matikan sementara foreign key checks agar proses truncate lancar
             DB::statement('SET FOREIGN_KEY_CHECKS=0;');
 
-            // Ganti nama tabel sesuai struktur DB Restoran/Kantin kamu
             DB::table('transaction_details')->truncate(); 
             DB::table('transactions')->truncate(); 
 

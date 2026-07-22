@@ -8,6 +8,7 @@ use App\Http\Controllers\SuperAdmin\DashboardController;
 use App\Http\Controllers\SuperAdmin\UserController;
 use App\Http\Controllers\SuperAdmin\ClassController;
 use App\Http\Controllers\SuperAdmin\SettingController;
+use App\Http\Controllers\SuperAdmin\DatabaseController;
 
 // Controller Admin Toko / Koperasi
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
@@ -18,32 +19,37 @@ use App\Http\Controllers\Admin\ClassController as AdminClassController;
 
 // Middleware Maintenance
 use App\Http\Middleware\CheckSystemMaintenance;
-use App\Http\Controllers\SuperAdmin\DatabaseController;
 
 /*
 |--------------------------------------------------------------------------
-| AUTHENTICATION ROUTES (TERPISAH SISWA & PETUGAS)
+| AUTHENTICATION ROUTES (PROTEKSI BRUTE-FORCE THROTTLE)
 |--------------------------------------------------------------------------
 */
 
 // Default URL (/) langsung ke Halaman Login Siswa
 Route::get('/', [AuthController::class, 'showLoginSiswa'])->name('login');
 
-// Portal Login Siswa (Menggunakan NISN)
+// Portal Login Siswa (Throttle: Max 5 percobaan per menit)
 Route::get('/login-siswa', [AuthController::class, 'showLoginSiswa'])->name('login.siswa');
-Route::post('/login-siswa', [AuthController::class, 'loginSiswa'])->name('login.siswa.process');
+Route::post('/login-siswa', [AuthController::class, 'loginSiswa'])
+    ->middleware('throttle:5,1')
+    ->name('login.siswa.process');
 
-// Portal Login Petugas (Super Admin, Admin, Kasir)
+// Portal Login Petugas (Throttle: Max 5 percobaan per menit)
 Route::get('/login-petugas', [AuthController::class, 'showLoginPetugas'])->name('login.petugas');
-Route::post('/login-petugas', [AuthController::class, 'loginPetugas'])->name('login.petugas.process');
+Route::post('/login-petugas', [AuthController::class, 'loginPetugas'])
+    ->middleware('throttle:5,1')
+    ->name('login.petugas.process');
 
-// Process Logout
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+// Process Logout (Hanya User Terautentikasi)
+Route::post('/logout', [AuthController::class, 'logout'])
+    ->middleware('auth')
+    ->name('logout');
 
 
 /*
 |--------------------------------------------------------------------------
-| SUPER ADMIN ROUTES
+| SUPER ADMIN ROUTES (SUPER PROTECTED)
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth', 'role:super_admin'])->prefix('super-admin')->name('superadmin.')->group(function () {
@@ -52,24 +58,50 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('super-admin')->name('su
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::post('/toggle-maintenance', [DashboardController::class, 'toggleMaintenance'])->name('toggle-maintenance');
 
-    // Khusus Manajemen Akun Admin
+    // Manajemen Akun Admin
     Route::get('/users', [UserController::class, 'index'])->name('users.index');
     Route::post('/users', [UserController::class, 'store'])->name('users.store');
-    Route::post('/users/reset-password/{id}', [UserController::class, 'resetPassword'])->name('users.resetPassword');
-    Route::patch('/users/toggle-status/{id}', [UserController::class, 'toggleStatus'])->name('users.toggleStatus');
+    
+    // Parameter Constraint: ID Harus Angka Murni
+    Route::post('/users/reset-password/{id}', [UserController::class, 'resetPassword'])
+        ->whereNumber('id')
+        ->name('users.resetPassword');
+        
+    Route::patch('/users/toggle-status/{id}', [UserController::class, 'toggleStatus'])
+        ->whereNumber('id')
+        ->name('users.toggleStatus');
 
     // Data Master Kelas & Jurusan
-    Route::resource('classes', ClassController::class)->except(['create', 'edit', 'show']);
+    Route::resource('classes', ClassController::class)
+        ->except(['create', 'edit', 'show'])
+        ->whereNumber('class');
 
     // Setting Aplikasi & Sekolah
     Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
     Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
 
-    // Route Pemeliharaan Database
+    // Pemeliharaan Database (Sangat Sensitif - Proteksi CSRF & Rate Limit Ketat)
     Route::get('/database', [DatabaseController::class, 'index'])->name('database.index');
-    Route::get('/database/backup', [DatabaseController::class, 'downloadBackup'])->name('database.backup');
-    Route::post('/database/clear-cache', [DatabaseController::class, 'clearCache'])->name('database.clear-cache');
-    Route::post('/database/reset-transactions', [DatabaseController::class, 'resetTransactions'])->name('database.reset-transactions');
+    
+    // Backup Database
+    Route::post('/database/backup', [DatabaseController::class, 'downloadBackup'])
+        ->middleware('throttle:2,1')
+        ->name('database.backup');
+        
+    // Clear Cache
+    Route::post('/database/clear-cache', [DatabaseController::class, 'clearCache'])
+        ->middleware('throttle:3,1')
+        ->name('database.clear-cache');
+        
+    // Restore Database SQL
+    Route::post('/database/restore', [DatabaseController::class, 'restoreBackup'])
+        ->middleware('throttle:2,1')
+        ->name('database.restore');
+
+    // Reset Data Transaksi
+    Route::post('/database/reset-transactions', [DatabaseController::class, 'resetTransactions'])
+        ->middleware('throttle:2,1')
+        ->name('database.reset-transactions');
 });
 
 
@@ -89,25 +121,35 @@ Route::middleware(['auth', 'role:admin', CheckSystemMaintenance::class . ':admin
 
     // 1. Master Kategori Produk
     Route::middleware([CheckSystemMaintenance::class . ':categories'])->group(function () {
-        Route::resource('categories', CategoryController::class)->only(['index', 'store', 'destroy']);
+        Route::resource('categories', CategoryController::class)
+            ->only(['index', 'store', 'destroy'])
+            ->whereNumber('category');
     });
 
     // 2. Master Produk / Barang
     Route::middleware([CheckSystemMaintenance::class . ':products'])->group(function () {
-        Route::resource('products', ProductController::class)->except(['create', 'edit', 'show']);
+        Route::resource('products', ProductController::class)
+            ->except(['create', 'edit', 'show'])
+            ->whereNumber('product');
     });
 
     // 3. Master Kelas & Jurusan
     Route::middleware([CheckSystemMaintenance::class . ':classes'])->group(function () {
-        Route::resource('classes', AdminClassController::class)->except(['create', 'edit', 'show']);
+        Route::resource('classes', AdminClassController::class)
+            ->except(['create', 'edit', 'show'])
+            ->whereNumber('class');
     });
 
     // 4. Kelola Kasir
     Route::middleware([CheckSystemMaintenance::class . ':kasir'])->group(function () {
         Route::get('/kasir', [AdminUserController::class, 'indexKasir'])->name('kasir.index');
         Route::post('/kasir', [AdminUserController::class, 'storeKasir'])->name('kasir.store');
-        Route::post('/kasir/reset-password/{id}', [AdminUserController::class, 'resetPasswordKasir'])->name('kasir.resetPassword');
-        Route::patch('/kasir/toggle-status/{id}', [AdminUserController::class, 'toggleStatusKasir'])->name('kasir.toggleStatus');
+        Route::post('/kasir/reset-password/{id}', [AdminUserController::class, 'resetPasswordKasir'])
+            ->whereNumber('id')
+            ->name('kasir.resetPassword');
+        Route::patch('/kasir/toggle-status/{id}', [AdminUserController::class, 'toggleStatusKasir'])
+            ->whereNumber('id')
+            ->name('kasir.toggleStatus');
     });
 
     // 5. Kelola Siswa
@@ -115,8 +157,12 @@ Route::middleware(['auth', 'role:admin', CheckSystemMaintenance::class . ':admin
         Route::get('/siswa', [AdminUserController::class, 'indexSiswa'])->name('siswa.index');
         Route::post('/siswa', [AdminUserController::class, 'storeSiswa'])->name('siswa.store');
         Route::post('/siswa/import', [AdminUserController::class, 'importSiswa'])->name('siswa.import');
-        Route::post('/siswa/reset-password/{id}', [AdminUserController::class, 'resetPasswordSiswa'])->name('siswa.resetPassword');
-        Route::delete('/siswa/{id}', [AdminUserController::class, 'destroySiswa'])->name('siswa.destroy');
+        Route::post('/siswa/reset-password/{id}', [AdminUserController::class, 'resetPasswordSiswa'])
+            ->whereNumber('id')
+            ->name('siswa.resetPassword');
+        Route::delete('/siswa/{id}', [AdminUserController::class, 'destroySiswa'])
+            ->whereNumber('id')
+            ->name('siswa.destroy');
     });
 });
 
@@ -130,12 +176,7 @@ Route::middleware(['auth', 'role:kasir', CheckSystemMaintenance::class . ':kasir
     ->prefix('kasir')
     ->name('kasir.')
     ->group(function () {
-        
-    // Masukkan route milik Kasir di sini (transaksi, cetak struk, dll.)
-    // Contoh:
-    // Route::get('/dashboard', [KasirDashboardController::class, 'index'])->name('dashboard');
-    // Route::get('/transaksi', [TransactionController::class, 'index'])->name('transaksi.index');
-
+        // Route khusus kasir di sini
 });
 
 
@@ -148,9 +189,5 @@ Route::middleware(['auth', 'role:siswa', CheckSystemMaintenance::class . ':siswa
     ->prefix('siswa')
     ->name('siswa.')
     ->group(function () {
-        
-    // Masukkan route milik Siswa di sini (katalog barang, riwayat belanja, dll.)
-    // Contoh:
-    // Route::get('/dashboard', [SiswaDashboardController::class, 'index'])->name('dashboard');
-
+        // Route khusus siswa di sini
 });
