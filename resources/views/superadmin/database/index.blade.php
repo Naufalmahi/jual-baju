@@ -24,7 +24,7 @@
     </div>
 @endif
 
-<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
 
     <!-- CARD 1: BACKUP DATABASE -->
     <div class="bg-white p-6 rounded-xl shadow border-t-4 border-blue-500 flex flex-col justify-between">
@@ -34,20 +34,52 @@
                     <i class="fas fa-database"></i>
                 </div>
                 <div>
-                    <h3 class="font-bold text-gray-800 text-base">Backup Database</h3>
-                    <p class="text-xs text-gray-500">Unduh cadangan data aplikasi</p>
+                    <h3 class="font-bold text-gray-800 text-base">Backup DB</h3>
+                    <p class="text-xs text-gray-500">Unduh cadangan data</p>
                 </div>
             </div>
             <p class="text-xs text-gray-600 mb-6 leading-relaxed">
-                Unduh seluruh struktur data beserta isinya dalam bentuk file <code class="bg-gray-100 px-1 py-0.5 rounded text-red-500 font-mono">.sql</code> untuk mengamankan data dari kerusakan server.
+                Unduh seluruh struktur data beserta isinya dalam bentuk file <code class="bg-gray-100 px-1 py-0.5 rounded text-red-500 font-mono">.sql</code> untuk cadangan.
             </p>
         </div>
-        <a href="{{ route('superadmin.database.backup') }}" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-lg text-center transition flex items-center justify-center gap-2">
-            <i class="fas fa-download"></i> Download SQL Backup
-        </a>
+
+        <form action="{{ route('superadmin.database.backup') }}" method="POST">
+            @csrf
+            <button type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-lg transition flex items-center justify-center gap-2">
+                <i class="fas fa-download"></i> Download SQL
+            </button>
+        </form>
     </div>
 
-    <!-- CARD 2: CLEAR SYSTEM CACHE -->
+    <!-- CARD 2: RESTORE DATABASE -->
+    <div class="bg-white p-6 rounded-xl shadow border-t-4 border-amber-500 flex flex-col justify-between">
+        <div>
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 bg-amber-100 text-amber-600 rounded-lg flex items-center justify-center text-xl">
+                    <i class="fas fa-file-upload"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-gray-800 text-base">Restore DB</h3>
+                    <p class="text-xs text-gray-500">Upload file backup</p>
+                </div>
+            </div>
+            <p class="text-xs text-gray-600 mb-4 leading-relaxed">
+                Kembalikan data dari file <code class="bg-gray-100 px-1 py-0.5 rounded text-amber-600 font-mono">.sql</code> hasil backup jika data terhapus.
+            </p>
+        </div>
+
+        <form action="{{ route('superadmin.database.restore') }}" method="POST" enctype="multipart/form-data" onsubmit="return confirm('Apakah Anda yakin ingin menimpa database saat ini dengan data dari file backup ini?')">
+            @csrf
+            <div class="mb-3">
+                <input type="file" name="backup_file" accept=".sql" required class="block w-full text-[11px] text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100 cursor-pointer border rounded-lg p-1">
+            </div>
+            <button type="submit" class="w-full py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-lg transition flex items-center justify-center gap-2">
+                <i class="fas fa-upload"></i> Restore Data
+            </button>
+        </form>
+    </div>
+
+    <!-- CARD 3: CLEAR SYSTEM CACHE -->
     <div class="bg-white p-6 rounded-xl shadow border-t-4 border-emerald-500 flex flex-col justify-between">
         <div>
             <div class="flex items-center gap-3 mb-4">
@@ -55,23 +87,23 @@
                     <i class="fas fa-broom"></i>
                 </div>
                 <div>
-                    <h3 class="font-bold text-gray-800 text-base">Clear System Cache</h3>
-                    <p class="text-xs text-gray-500">Optimalkan performa aplikasi</p>
+                    <h3 class="font-bold text-gray-800 text-base">Clear Cache</h3>
+                    <p class="text-xs text-gray-500">Optimalkan performa</p>
                 </div>
             </div>
             <p class="text-xs text-gray-600 mb-6 leading-relaxed">
-                Bersihkan cache route, config, dan tampilan Blade untuk memperbarui perubahan sistem atau saat aplikasi terasa lambat.
+                Bersihkan cache route, config, dan tampilan Blade untuk memperbarui perubahan sistem aplikasi.
             </p>
         </div>
         <form action="{{ route('superadmin.database.clear-cache') }}" method="POST">
             @csrf
             <button type="submit" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg transition flex items-center justify-center gap-2">
-                <i class="fas fa-sync-alt"></i> Bersihkan Cache Now
+                <i class="fas fa-sync-alt"></i> Bersihkan Cache
             </button>
         </form>
     </div>
 
-    <!-- CARD 3: RESET TRANSAKSI LAMA -->
+    <!-- CARD 4: RESET TRANSAKSI LAMA -->
     <div class="bg-white p-6 rounded-xl shadow border-t-4 border-red-500 flex flex-col justify-between">
         <div>
             <div class="flex items-center gap-3 mb-4">
@@ -79,18 +111,18 @@
                     <i class="fas fa-trash-alt"></i>
                 </div>
                 <div>
-                    <h3 class="font-bold text-gray-800 text-base">Reset Data Transaksi</h3>
-                    <p class="text-xs text-gray-500">Pergantian Tahun Ajaran</p>
+                    <h3 class="font-bold text-gray-800 text-base">Reset Transaksi</h3>
+                    <p class="text-xs text-gray-500">Pergantian Tahun</p>
                 </div>
             </div>
             <p class="text-xs text-gray-600 mb-6 leading-relaxed">
-                Menghapus seluruh riwayat transaksi untuk dikosongkan kembali. <span class="text-red-600 font-bold">Aksi ini tidak dapat dibatalkan!</span>
+                Menghapus seluruh riwayat transaksi untuk dikosongkan. <span class="text-red-600 font-bold">Aksi tidak bisa dibatalkan!</span>
             </p>
         </div>
 
         <!-- Button Modal Trigger -->
         <button type="button" onclick="toggleModal('modalReset')" class="w-full py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-lg transition flex items-center justify-center gap-2">
-            <i class="fas fa-exclamation-triangle"></i> Reset Data Transaksi
+            <i class="fas fa-exclamation-triangle"></i> Reset Transaksi
         </button>
     </div>
 
