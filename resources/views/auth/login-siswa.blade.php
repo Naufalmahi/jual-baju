@@ -16,7 +16,7 @@
                 <i class="fas fa-user-graduate text-2xl"></i>
             </div>
             <h2 class="text-2xl font-bold text-gray-800">Portal Siswa</h2>
-            <p class="text-sm text-gray-500 mt-1">Masukkan Nomor Induk Siswa (NIS)</p>
+            <p class="text-sm text-gray-500 mt-1">Masukkan Nomor Induk Siswa Nasional (NISN)</p>
         </div>
 
         <!-- NOTIFIKASI ERROR -->

@@ -12,18 +12,29 @@ class Product extends Model
     protected $fillable = [
         'category_id',
         'barcode',
-        'size',
         'name',
         'buy_price',
         'sell_price',
-        'stock',
         'unit',
         'image',
         'is_active',
     ];
 
+    // Relasi ke kategori
     public function category()
     {
         return $this->belongsTo(Category::class);
+    }
+
+    // Relasi ke ukuran produk
+    public function sizes()
+    {
+        return $this->hasMany(ProductSize::class);
+    }
+
+    // Total stok semua ukuran
+    public function getTotalStockAttribute()
+    {
+        return $this->sizes->sum('stock');
     }
 }

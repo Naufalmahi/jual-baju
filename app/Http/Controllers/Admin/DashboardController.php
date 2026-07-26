@@ -12,13 +12,20 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        // 1. Data Statistik Dashboard
-        $totalProducts    = Product::count();
-        $lowStockProducts = Product::where('stock', '<=', 5)->get();
-        $totalKasir       = User::where('role', 'kasir')->count();
-        $totalSiswa       = User::where('role', 'siswa')->count(); // Tambahkan baris ini
+        // Statistik
+        $totalProducts = Product::count();
 
-        // 2. Status Maintenance Modul
+        // Produk dengan stok sedikit (total stok semua ukuran <= 5)
+        $lowStockProducts = Product::with('sizes')
+            ->get()
+            ->filter(function ($product) {
+                return $product->total_stock <= 5;
+            });
+
+        $totalKasir = User::where('role', 'kasir')->count();
+        $totalSiswa = User::where('role', 'siswa')->count();
+
+        // Maintenance
         $mCategories = Setting::where('key', 'maintenance_categories')->value('value') ?? '0';
         $mProducts   = Setting::where('key', 'maintenance_products')->value('value') ?? '0';
         $mClasses    = Setting::where('key', 'maintenance_classes')->value('value') ?? '0';
@@ -29,7 +36,7 @@ class DashboardController extends Controller
             'totalProducts',
             'lowStockProducts',
             'totalKasir',
-            'totalSiswa', // Masukkan ke compact
+            'totalSiswa',
             'mCategories',
             'mProducts',
             'mClasses',

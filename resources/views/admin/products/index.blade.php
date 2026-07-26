@@ -11,11 +11,14 @@
     name: '', 
     category_id: '', 
     barcode: '', 
-    size: 'All Size', 
     buy_price: '', 
     sell_price: '', 
-    stock: '', 
     unit: 'Pcs',
+    S: 0,
+    M: 0,
+    L: 0,
+    XL: 0,
+    XXL: 0,
 
     editProduct(product, updateUrl) {
         this.isEdit = true;
@@ -23,11 +26,25 @@
         this.name = product.name;
         this.category_id = product.category_id;
         this.barcode = product.barcode ?? '';
-        this.size = product.size ?? 'All Size';
         this.buy_price = product.buy_price;
         this.sell_price = product.sell_price;
-        this.stock = product.stock;
         this.unit = product.unit;
+        this.S = 0;
+        this.M = 0;
+        this.L = 0;
+        this.XL = 0;
+        this.XXL = 0;
+
+        if(product.sizes){
+            product.sizes.forEach(size => {
+                if(size.size == 'S') this.S = size.stock;
+                if(size.size == 'M') this.M = size.stock;
+                if(size.size == 'L') this.L = size.stock;
+                if(size.size == 'XL') this.XL = size.stock;
+                if(size.size == 'XXL') this.XXL = size.stock;
+            });
+        }
+
         this.openModal = true;
     },
 
@@ -37,11 +54,14 @@
         this.name = '';
         this.category_id = '';
         this.barcode = '';
-        this.size = 'All Size';
         this.buy_price = '';
         this.sell_price = '';
-        this.stock = '';
         this.unit = 'Pcs';
+        this.S = 0;
+        this.M = 0;
+        this.L = 0;
+        this.XL = 0;
+        this.XXL = 0;
         this.openModal = true;
     }
 }">
@@ -79,7 +99,6 @@
                     <th class="p-4">Barcode</th>
                     <th class="p-4">Nama Barang</th>
                     <th class="p-4">Kategori</th>
-                    <th class="p-4 text-center">Ukuran</th>
                     <th class="p-4">Harga Beli</th>
                     <th class="p-4">Harga Jual</th>
                     <th class="p-4 text-center">Stok</th>
@@ -92,20 +111,15 @@
                     <td class="p-4 text-gray-500 font-mono text-xs">{{ $product->barcode ?? '-' }}</td>
                     <td class="p-4 font-bold text-gray-800">{{ $product->name }}</td>
                     <td class="p-4 text-gray-600"><span class="px-2 py-1 bg-gray-100 rounded text-xs font-semibold">{{ $product->category->name }}</span></td>
-                    <td class="p-4 text-center">
-                        <span class="px-2 py-1 bg-blue-50 text-blue-700 border border-blue-200 rounded text-xs font-bold uppercase">
-                            {{ $product->size ?? '-' }}
-                        </span>
-                    </td>
                     <td class="p-4 text-gray-600">Rp {{ number_format($product->buy_price, 0, ',', '.') }}</td>
                     <td class="p-4 text-emerald-700 font-bold">Rp {{ number_format($product->sell_price, 0, ',', '.') }}</td>
                     <td class="p-4 text-center">
-                        <span class="px-2.5 py-1 text-xs font-bold rounded-full {{ $product->stock <= 5 ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700' }}">
-                            {{ $product->stock }} {{ $product->unit }}
+                        <span class="px-2.5 py-1 text-xs font-bold rounded-full bg-emerald-100 text-emerald-700">
+                            {{ $product->total_stock }} {{ $product->unit }}
                         </span>
                     </td>
                     <td class="p-4 text-center space-x-2">
-                        <button @click="editProduct({{ json_encode($product) }}, '{{ route('admin.products.update', $product->id) }}')" 
+                        <button @click='editProduct(@json($product), "{{ route("admin.products.update", $product->id) }}")' 
                             class="px-3 py-1 bg-amber-500 text-white rounded hover:bg-amber-600 text-xs font-bold transition">
                             <i class="fas fa-edit"></i> Edit
                         </button>
@@ -121,7 +135,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="8" class="p-4 text-center text-gray-500">Tidak ada data barang.</td>
+                    <td colspan="7" class="p-4 text-center text-gray-500">Tidak ada data barang.</td>
                 </tr>
                 @endforelse
             </tbody>
@@ -160,21 +174,10 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-3 gap-4">
+                <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Barcode (Opsional)</label>
                         <input type="text" name="barcode" x-model="barcode" class="w-full p-2 border rounded text-sm">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Ukuran</label>
-                        <select name="size" x-model="size" required class="w-full p-2 border rounded text-sm">
-                            <option value="S">S</option>
-                            <option value="M">M</option>
-                            <option value="L">L</option>
-                            <option value="XL">XL</option>
-                            <option value="XXL">XXL</option>
-                            <option value="All Size">All Size</option>
-                        </select>
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Satuan</label>
@@ -182,7 +185,7 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-3 gap-4">
+                <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Harga Beli</label>
                         <input type="number" name="buy_price" x-model="buy_price" required class="w-full p-2 border rounded text-sm">
@@ -191,9 +194,31 @@
                         <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Harga Jual</label>
                         <input type="number" name="sell_price" x-model="sell_price" required class="w-full p-2 border rounded text-sm">
                     </div>
-                    <div>
-                        <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Stok Awal</label>
-                        <input type="number" name="stock" x-model="stock" required class="w-full p-2 border rounded text-sm">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase mb-2">Stok Berdasarkan Ukuran</label>
+                    <div class="grid grid-cols-5 gap-3">
+                        <div>
+                            <label class="text-xs font-bold text-gray-700">S</label>
+                            <input type="number" name="S" x-model="S" min="0" class="w-full border rounded p-2 text-sm">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-gray-700">M</label>
+                            <input type="number" name="M" x-model="M" min="0" class="w-full border rounded p-2 text-sm">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-gray-700">L</label>
+                            <input type="number" name="L" x-model="L" min="0" class="w-full border rounded p-2 text-sm">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-gray-700">XL</label>
+                            <input type="number" name="XL" x-model="XL" min="0" class="w-full border rounded p-2 text-sm">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-gray-700">XXL</label>
+                            <input type="number" name="XXL" x-model="XXL" min="0" class="w-full border rounded p-2 text-sm">
+                        </div>
                     </div>
                 </div>
 
