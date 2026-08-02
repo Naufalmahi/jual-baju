@@ -8,9 +8,51 @@ use App\Models\ProductSize;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+
+require_once base_path('vendor/picqer/php-barcode-generator/src/Barcode.php');
+require_once base_path('vendor/picqer/php-barcode-generator/src/BarcodeBar.php');
+require_once base_path('vendor/picqer/php-barcode-generator/src/BarcodeGenerator.php');
+require_once base_path('vendor/picqer/php-barcode-generator/src/BarcodeGeneratorPNG.php');
+require_once base_path('vendor/picqer/php-barcode-generator/src/Types/TypeInterface.php');
+require_once base_path('vendor/picqer/php-barcode-generator/src/Types/TypeCode128.php');
+require_once base_path('vendor/picqer/php-barcode-generator/src/Exceptions/BarcodeException.php');
+require_once base_path('vendor/picqer/php-barcode-generator/src/Helpers/BinarySequenceConverter.php');
+
+use Picqer\Barcode\BarcodeGeneratorPNG;
 
 class ProductController extends Controller
 {
+    protected function generateBarcodeCode()
+    {
+        $year = date('Y');
+        $prefix = "JB-{$year}-";
+
+        $lastProduct = Product::where('barcode', 'like', $prefix . '%')
+            ->orderBy('barcode', 'desc')
+            ->first();
+
+        if ($lastProduct && $lastProduct->barcode) {
+            $lastNumber = (int) substr($lastProduct->barcode, -4);
+            $newNumber = $lastNumber + 1;
+        } else {
+            $newNumber = 1;
+        }
+
+        return $prefix . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
+    }
+
+    protected function generateBarcodeImage($barcodeCode)
+    {
+        $generator = new BarcodeGeneratorPNG();
+        $barcodeData = $generator->getBarcode($barcodeCode, $generator::TYPE_CODE_128);
+
+        $filename = 'barcodes/' . $barcodeCode . '.png';
+        Storage::disk('public')->put($filename, $barcodeData);
+
+        return $filename;
+    }
+
     public function index(Request $request)
     {
         $query = Product::with(['category', 'sizes']);
@@ -45,6 +87,7 @@ class ProductController extends Controller
             'buy_price'   => 'required|numeric|min:0',
             'sell_price'  => 'required|numeric|min:0',
             'unit'        => 'required|string',
+            'image'       => 'required|image|mimes:jpeg,jpg,png,webp|max:2048',
 
             'S'   => 'nullable|integer|min:0',
             'M'   => 'nullable|integer|min:0',
@@ -55,14 +98,21 @@ class ProductController extends Controller
 
         DB::transaction(function () use ($request) {
 
+            $imagePath = $request->file('image')->store('products', 'public');
+
+            $barcodeCode = $request->barcode ?: $this->generateBarcodeCode();
+            $barcodeImage = $this->generateBarcodeImage($barcodeCode);
+
             $product = Product::create([
-                'name'        => $request->name,
-                'category_id' => $request->category_id,
-                'barcode'     => $request->barcode,
-                'buy_price'   => $request->buy_price,
-                'sell_price'  => $request->sell_price,
-                'unit'        => $request->unit,
-                'is_active'   => true,
+                'name'          => $request->name,
+                'category_id'   => $request->category_id,
+                'barcode'       => $barcodeCode,
+                'barcode_image' => $barcodeImage,
+                'buy_price'     => $request->buy_price,
+                'sell_price'    => $request->sell_price,
+                'unit'          => $request->unit,
+                'image'         => $imagePath,
+                'is_active'     => true,
             ]);
 
             foreach (['S','M','L','XL','XXL'] as $size) {
@@ -87,6 +137,7 @@ class ProductController extends Controller
             'buy_price'   => 'required|numeric|min:0',
             'sell_price'  => 'required|numeric|min:0',
             'unit'        => 'required|string',
+            'image'       => 'nullable|image|mimes:jpeg,jpg,png,webp|max:2048',
 
             'S'   => 'nullable|integer|min:0',
             'M'   => 'nullable|integer|min:0',
@@ -99,14 +150,37 @@ class ProductController extends Controller
 
             $product = Product::findOrFail($id);
 
-            $product->update([
-                'name'        => $request->name,
-                'category_id' => $request->category_id,
-                'barcode'     => $request->barcode,
-                'buy_price'   => $request->buy_price,
-                'sell_price'  => $request->sell_price,
-                'unit'        => $request->unit,
-            ]);
+            $barcodeCode = $request->barcode;
+            $barcodeImage = $product->barcode_image;
+
+            if ($barcodeCode && $barcodeCode !== $product->barcode) {
+                if ($product->barcode_image && Storage::disk('public')->exists($product->barcode_image)) {
+                    Storage::disk('public')->delete($product->barcode_image);
+                }
+                $barcodeImage = $this->generateBarcodeImage($barcodeCode);
+            } elseif (!$barcodeCode && !$product->barcode) {
+                $barcodeCode = $this->generateBarcodeCode();
+                $barcodeImage = $this->generateBarcodeImage($barcodeCode);
+            }
+
+            $updateData = [
+                'name'          => $request->name,
+                'category_id'   => $request->category_id,
+                'barcode'       => $barcodeCode,
+                'barcode_image' => $barcodeImage,
+                'buy_price'     => $request->buy_price,
+                'sell_price'    => $request->sell_price,
+                'unit'          => $request->unit,
+            ];
+
+            if ($request->hasFile('image')) {
+                if ($product->image && Storage::disk('public')->exists($product->image)) {
+                    Storage::disk('public')->delete($product->image);
+                }
+                $updateData['image'] = $request->file('image')->store('products', 'public');
+            }
+
+            $product->update($updateData);
 
             foreach (['S','M','L','XL','XXL'] as $size) {
 
@@ -129,8 +203,31 @@ class ProductController extends Controller
 
     public function destroy($id)
     {
-        Product::findOrFail($id)->delete();
+        $product = Product::findOrFail($id);
+
+        if ($product->image && Storage::disk('public')->exists($product->image)) {
+            Storage::disk('public')->delete($product->image);
+        }
+
+        if ($product->barcode_image && Storage::disk('public')->exists($product->barcode_image)) {
+            Storage::disk('public')->delete($product->barcode_image);
+        }
+
+        $product->delete();
 
         return redirect()->back()->with('success', 'Barang berhasil dihapus!');
+    }
+
+    public function printBarcode($id)
+    {
+        $product = Product::findOrFail($id);
+        return view('admin.products.print-barcode', compact('product'));
+    }
+
+    public function printBulkBarcodes(Request $request)
+    {
+        $ids = explode(',', $request->ids);
+        $products = Product::whereIn('id', $ids)->whereNotNull('barcode_image')->get();
+        return view('admin.products.print-barcodes', compact('products'));
     }
 }
