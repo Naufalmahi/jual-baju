@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\ClassModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
@@ -39,7 +40,7 @@ class UserController extends Controller
     public function resetPasswordKasir(Request $request, int $id)
     {
         $request->validate(['password' => 'required|string|min:6']);
-        $kasir = User::findOrFail($id);
+        $kasir = User::where('role', 'kasir')->findOrFail($id);
         $kasir->update(['password' => Hash::make($request->password)]);
 
         return redirect()->back()->with('success', 'Password kasir berhasil diperbarui!');
@@ -47,7 +48,7 @@ class UserController extends Controller
 
     public function toggleStatusKasir(int $id)
     {
-        $kasir = User::findOrFail($id);
+        $kasir = User::where('role', 'kasir')->findOrFail($id);
         $kasir->update(['is_active' => !$kasir->is_active]);
 
         return redirect()->back()->with('success', 'Status kasir berhasil diubah!');
@@ -135,12 +136,26 @@ class UserController extends Controller
 
             while (($data = fgetcsv($handle, 1000, ',')) !== FALSE) {
                 if (!empty($data[0])) {
+                    $nisn = trim($data[0]);
+
+                    // Hanya terima class_id yang valid; selain itu dianggap belum punya kelas
+                    $classId = null;
+                    if (!empty($data[2]) && ClassModel::whereKey($data[2])->exists()) {
+                        $classId = $data[2];
+                    }
+
+                    // Pastikan username unik (bisa bentrok dengan akun non-siswa)
+                    $username = $nisn;
+                    if (User::where('username', $username)->where('nisn_nip', '!=', $nisn)->exists()) {
+                        $username = $nisn . '_' . Str::random(3);
+                    }
+
                     User::updateOrCreate(
-                        ['nisn_nip' => trim($data[0])],
+                        ['nisn_nip' => $nisn],
                         [
-                            'username'  => trim($data[0]),
+                            'username'  => $username,
                             'name'      => $data[1] ?? 'Siswa',
-                            'class_id'  => !empty($data[2]) ? $data[2] : null,
+                            'class_id'  => $classId,
                             'password'  => Hash::make(!empty($data[3]) ? $data[3] : '12345678'),
                             'role'      => 'siswa',
                             'is_active' => true,

@@ -19,7 +19,7 @@ class DashboardController extends Controller
         $lowStockProducts = Product::with('sizes')
             ->get()
             ->filter(function ($product) {
-                return $product->total_stock <= 5;
+                return $product->sizes->isNotEmpty() && $product->total_stock <= 5;
             });
 
         $totalKasir = User::where('role', 'kasir')->count();

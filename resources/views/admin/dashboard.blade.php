@@ -4,48 +4,60 @@
 @section('page_title', 'Dashboard Admin Toko / Koperasi')
 
 @section('content')
-<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-    <div class="bg-white p-6 rounded-xl shadow border-l-4 border-emerald-500 flex items-center justify-between">
-        <div>
-            <p class="text-xs font-bold text-gray-500 uppercase">Total Produk</p>
-            <p class="text-2xl font-bold text-gray-800">{{ $totalProducts }}</p>
+<div class="row g-4 mb-5">
+    <div class="col-sm-6 col-xl-3" data-aos="fade-up">
+        <div class="stat-card">
+            <div>
+                <div class="stat-label">Total Produk</div>
+                <div class="stat-value">{{ $totalProducts }}</div>
+            </div>
+            <div class="stat-icon stat-icon-success"><i class="bi bi-box-seam-fill"></i></div>
         </div>
-        <i class="fas fa-boxes text-emerald-500 text-3xl"></i>
     </div>
-
-    <div class="bg-white p-6 rounded-xl shadow border-l-4 border-amber-500 flex items-center justify-between">
-        <div>
-            <p class="text-xs font-bold text-gray-500 uppercase">Stok Menipis (&lt;=5)</p>
-            <p class="text-2xl font-bold text-gray-800">{{ $lowStockProducts->count() }}</p>
+    <div class="col-sm-6 col-xl-3" data-aos="fade-up" data-aos-delay="50">
+        <div class="stat-card">
+            <div>
+                <div class="stat-label">Stok Menipis (&lt;=5)</div>
+                <div class="stat-value">{{ $lowStockProducts->count() }}</div>
+            </div>
+            <div class="stat-icon stat-icon-warning"><i class="bi bi-exclamation-triangle-fill"></i></div>
         </div>
-        <i class="fas fa-exclamation-triangle text-amber-500 text-3xl"></i>
     </div>
-
-    <div class="bg-white p-6 rounded-xl shadow border-l-4 border-blue-500 flex items-center justify-between">
-        <div>
-            <p class="text-xs font-bold text-gray-500 uppercase">Total Kasir</p>
-            <p class="text-2xl font-bold text-gray-800">{{ $totalKasir }}</p>
+    <div class="col-sm-6 col-xl-3" data-aos="fade-up" data-aos-delay="100">
+        <div class="stat-card">
+            <div>
+                <div class="stat-label">Total Kasir</div>
+                <div class="stat-value">{{ $totalKasir }}</div>
+            </div>
+            <div class="stat-icon stat-icon-info"><i class="bi bi-laptop"></i></div>
         </div>
-        <i class="fas fa-cash-register text-blue-500 text-3xl"></i>
     </div>
-
-    <div class="bg-white p-6 rounded-xl shadow border-l-4 border-purple-500 flex items-center justify-between">
-        <div>
-            <p class="text-xs font-bold text-gray-500 uppercase">Total Siswa</p>
-            <p class="text-2xl font-bold text-gray-800">{{ $totalSiswa }}</p>
+    <div class="col-sm-6 col-xl-3" data-aos="fade-up" data-aos-delay="150">
+        <div class="stat-card">
+            <div>
+                <div class="stat-label">Total Siswa</div>
+                <div class="stat-value">{{ $totalSiswa }}</div>
+            </div>
+            <div class="stat-icon stat-icon-primary"><i class="bi bi-mortarboard-fill"></i></div>
         </div>
-        <i class="fas fa-user-graduate text-purple-500 text-3xl"></i>
     </div>
 </div>
 
 @if($lowStockProducts->count() > 0)
-<div class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-xl shadow mb-6">
-    <h3 class="text-sm font-bold text-amber-800 mb-2"><i class="fas fa-bell mr-1"></i> Peringatan Stok Barang Menipis</h3>
-    <ul class="list-disc list-inside text-xs text-amber-700 space-y-1">
-        @foreach($lowStockProducts as $item)
-            <li><strong>{{ $item->name }}</strong> — Sisa Stok: <span class="font-bold text-red-600">{{ $item->stock }} {{ $item->unit }}</span></li>
-        @endforeach
-    </ul>
+<div class="card-custom" data-aos="fade-up">
+    <div class="card-body-custom" style="border-left:4px solid var(--warning)">
+        <div class="d-flex align-items-start gap-3">
+            <div class="stat-icon stat-icon-warning flex-shrink-0"><i class="bi bi-bell-fill"></i></div>
+            <div>
+                <h6 class="fw-bold mb-2" style="font-size:.85rem">Peringatan Stok Barang Menipis</h6>
+                <ul class="mb-0" style="font-size:.8rem;color:var(--neutral-600);padding-left:18px">
+                    @foreach($lowStockProducts as $item)
+                        <li class="mb-1"><strong>{{ $item->name }}</strong> — Sisa Stok: <span class="fw-bold" style="color:var(--danger)">{{ $item->total_stock }} {{ $item->unit }}</span></li>
+                    @endforeach
+                </ul>
+            </div>
+        </div>
+    </div>
 </div>
 @endif
 @endsection

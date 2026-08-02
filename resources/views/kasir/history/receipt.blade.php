@@ -23,7 +23,7 @@
     <div class="line"></div>
 
     @foreach($order->items as $item)
-        <div>{{ $order->product->name ?? 'Seragam' }} ({{ $item->size }})</div>
+        <div>{{ $item->product->name ?? 'Seragam' }} ({{ $item->size }})</div>
         <div class="flex">
             <span>{{ $item->quantity }} x {{ number_format($item->price, 0, ',', '.') }}</span>
             <span>Rp {{ number_format($item->price * $item->quantity, 0, ',', '.') }}</span>

@@ -91,6 +91,11 @@ class CheckoutController extends Controller
             $sizeName = $directCheckout['size'];
             $totalAmount = $price * $quantity;
 
+            $ps = $product->sizes()->where('size', $sizeName)->first();
+            if ($ps && $quantity > $ps->stock) {
+                return redirect()->route('siswa.checkout')->with('error', "Stok ukuran {$sizeName} tidak mencukupi (sisa {$ps->stock} Pcs).");
+            }
+
             $order = Order::create([
                 'order_code' => $orderCode,
                 'user_id' => $userId,
@@ -126,10 +131,23 @@ class CheckoutController extends Controller
             }
 
             $totalAmount = 0;
+            $stockErrors = [];
             foreach ($carts as $c) {
                 $price = (float) ($c->product->sell_price ?? 0);
                 $q = max(1, (int) ($c->{$qtyCol} ?? $c->quantity ?? 1));
                 $totalAmount += $price * $q;
+
+                if ($c->product) {
+                    $sizeName = $c->size ?? ($c->productSize->size ?? 'M');
+                    $ps = $c->product->sizes()->where('size', $sizeName)->first();
+                    if ($ps && $q > $ps->stock) {
+                        $stockErrors[] = "{$c->product->name} (ukuran {$sizeName}): sisa stok {$ps->stock} Pcs.";
+                    }
+                }
+            }
+
+            if (!empty($stockErrors)) {
+                return redirect()->route('siswa.checkout')->with('error', 'Stok tidak mencukupi: ' . implode(' ', $stockErrors));
             }
 
             $order = Order::create([

@@ -34,6 +34,10 @@ class OrderController extends Controller
     // Mengubah status pesanan menjadi Selesai (Siswa ambil baju & bayar)
     public function complete(Order $order)
     {
+        if ($order->status === 'Dibatalkan') {
+            return back()->with('error', 'Pesanan #' . $order->order_code . ' sudah dibatalkan dan tidak bisa diselesaikan.');
+        }
+
         $order->update([
             'status' => 'Selesai',
             'paid_at' => $order->paid_at ?? now(),

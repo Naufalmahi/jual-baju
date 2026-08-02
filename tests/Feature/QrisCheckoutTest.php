@@ -131,6 +131,25 @@ class QrisCheckoutTest extends TestCase
         $this->assertSame('txn-check-1', $order->fresh()->midtrans_transaction_id);
     }
 
+    public function test_check_status_returns_friendly_message_when_transaction_not_found(): void
+    {
+        $user = $this->makeUser();
+        $order = $this->makeOrder($user);
+
+        $this->mock(MidtransService::class, function ($mock) use ($order) {
+            $mock->shouldReceive('getTransactionStatus')
+                ->once()
+                ->with($order->order_code)
+                ->andThrow(new \Exception('Midtrans API Error (HTTP 404): ""'));
+        });
+
+        $response = $this->actingAs($user)->postJson("/siswa/orders/{$order->id}/check-status");
+
+        $response->assertOk();
+        $response->assertJson(['success' => false]);
+        $this->assertSame('Menunggu Pembayaran', $order->fresh()->status);
+    }
+
     public function test_check_status_denied_for_other_users_order(): void
     {
         $owner = $this->makeUser();
@@ -167,5 +186,63 @@ class QrisCheckoutTest extends TestCase
     public function test_update_status_route_no_longer_exists(): void
     {
         $this->assertFalse(\Illuminate\Support\Facades\Route::has('siswa.orders.updateStatus'));
+    }
+
+    public function test_checkout_rejects_quantity_exceeding_size_stock(): void
+    {
+        $user = $this->makeUser();
+        $category = \App\Models\Category::create(['name' => 'Seragam', 'slug' => 'seragam']);
+        $product = \App\Models\Product::create([
+            'category_id' => $category->id,
+            'name' => 'Seragam Pramuka',
+            'sell_price' => 100000,
+        ]);
+        \App\Models\ProductSize::create([
+            'product_id' => $product->id,
+            'size' => 'M',
+            'stock' => 1,
+        ]);
+
+        $this->withSession(['direct_checkout' => [
+            'product_id' => $product->id,
+            'size' => 'M',
+            'quantity' => 2,
+        ]]);
+
+        $response = $this->actingAs($user)->post('/siswa/checkout', [
+            'payment_method' => 'cash',
+        ]);
+
+        $response->assertSessionHas('error');
+        $this->assertDatabaseCount('orders', 0);
+    }
+
+    public function test_checkout_allows_quantity_within_size_stock(): void
+    {
+        $user = $this->makeUser();
+        $category = \App\Models\Category::create(['name' => 'Seragam', 'slug' => 'seragam']);
+        $product = \App\Models\Product::create([
+            'category_id' => $category->id,
+            'name' => 'Seragam Pramuka',
+            'sell_price' => 100000,
+        ]);
+        \App\Models\ProductSize::create([
+            'product_id' => $product->id,
+            'size' => 'M',
+            'stock' => 5,
+        ]);
+
+        $this->withSession(['direct_checkout' => [
+            'product_id' => $product->id,
+            'size' => 'M',
+            'quantity' => 2,
+        ]]);
+
+        $response = $this->actingAs($user)->post('/siswa/checkout', [
+            'payment_method' => 'cash',
+        ]);
+
+        $response->assertSessionHasNoErrors();
+        $this->assertDatabaseCount('orders', 1);
     }
 }
