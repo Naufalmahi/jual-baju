@@ -84,7 +84,9 @@
     </div>
 </form>
 
+@if($qrisEnabled)
 <script src="{{ config('midtrans.snap_url') }}" data-client-key="{{ config('midtrans.client_key') }}"></script>
+@endif
 <script>
     const form = document.getElementById('paymentForm');
     const submitBtn = document.getElementById('submitBtn');

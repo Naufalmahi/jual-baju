@@ -230,9 +230,7 @@ class MidtransService
      */
     public function getSnapUrl()
     {
-        return $this->isProduction
-            ? 'https://app.midtrans.com/snap/snap.js'
-            : 'https://app.sandbox.midtrans.com/snap/snap.js';
+        return config('midtrans.snap_url');
     }
 
     /**
@@ -249,14 +247,5 @@ class MidtransService
     public function getBaseUrl()
     {
         return $this->baseUrl;
-    }
-
-    /**
-     * Verify webhook signature
-     */
-    public function verifyWebhookSignature($orderId, $statusCode, $grossAmount, $serverKey, $signatureKey)
-    {
-        $signature = hash('sha512', $orderId . $statusCode . $grossAmount . $serverKey);
-        return $signature === $signatureKey;
     }
 }

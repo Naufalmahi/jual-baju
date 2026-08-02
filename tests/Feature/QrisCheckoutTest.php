@@ -58,12 +58,29 @@ class QrisCheckoutTest extends TestCase
     {
         Setting::create(['key' => 'enable_qris', 'value' => '1']);
         $user = $this->makeUser();
+        $category = \App\Models\Category::create(['name' => 'Seragam', 'slug' => 'seragam']);
+        $product = \App\Models\Product::create([
+            'category_id' => $category->id,
+            'name' => 'Seragam Pramuka',
+            'sell_price' => 100000,
+        ]);
+
+        $this->withSession(['direct_checkout' => [
+            'product_id' => $product->id,
+            'size' => 'M',
+            'quantity' => 1,
+        ]]);
 
         $response = $this->actingAs($user)->post('/siswa/checkout', [
             'payment_method' => 'qris',
         ]);
 
         $response->assertSessionDoesntHaveErrors('payment_method');
+        $this->assertDatabaseHas('orders', [
+            'user_id' => $user->id,
+            'payment_method' => 'qris',
+            'total_amount' => 100000,
+        ]);
     }
 
     public function test_payQris_rejected_for_other_users_order(): void
@@ -111,6 +128,7 @@ class QrisCheckoutTest extends TestCase
         $response->assertJson(['status' => 'Siap Diambil']);
         $this->assertSame('Siap Diambil', $order->fresh()->status);
         $this->assertNotNull($order->fresh()->paid_at);
+        $this->assertSame('txn-check-1', $order->fresh()->midtrans_transaction_id);
     }
 
     public function test_check_status_denied_for_other_users_order(): void

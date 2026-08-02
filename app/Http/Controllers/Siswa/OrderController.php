@@ -59,16 +59,16 @@ class OrderController extends Controller
             $transactionData = [
                 'transaction_details' => [
                     'order_id' => $order->order_code,
-                    'gross_amount' => (int) $order->total_amount,
+                    'gross_amount' => (int) round((float) $order->total_amount),
                 ],
                 'customer_details' => [
                     'first_name' => Auth::user()->name,
-                    'email' => Auth::user()->email,
+                    'email' => Auth::user()->email ?? Auth::user()->username . '@koperasi-sekolah.local',
                 ],
                 'item_details' => [
                     [
                         'id' => 'order-' . $order->id,
-                        'price' => (int) $order->total_amount,
+                        'price' => (int) round((float) $order->total_amount),
                         'quantity' => 1,
                         'name' => 'Order #' . $order->order_code,
                     ]
@@ -180,7 +180,7 @@ class OrderController extends Controller
                 return response()->json(['status' => 'error', 'message' => 'Order not found'], 404);
             }
 
-            if (!$this->grossAmountMatches($order, $grossAmount)) {
+            if (!is_string($statusCode) || !is_numeric($grossAmount) || !$this->grossAmountMatches($order, $grossAmount)) {
                 Log::warning('Midtrans webhook gross amount mismatch', [
                     'order_id' => $orderId,
                     'expected' => $order->total_amount,
@@ -196,7 +196,7 @@ class OrderController extends Controller
         } catch (\Exception $e) {
             Log::error('Midtrans webhook error', ['message' => $e->getMessage()]);
 
-            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
+            return response()->json(['status' => 'error', 'message' => 'Internal server error'], 500);
         }
     }
 
@@ -206,6 +206,11 @@ class OrderController extends Controller
         $transactionStatus = $notification['transaction_status'] ?? null;
         $transactionId = $notification['transaction_id'] ?? null;
 
+        // Status terminal tidak boleh diregresi oleh webhook yang tiba tidak urut/duplikat
+        if (in_array($order->status, ['Selesai', 'Dibatalkan'])) {
+            return;
+        }
+
         if (in_array($transactionStatus, ['capture', 'settlement'])) {
             if ($transactionStatus === 'capture' && ($notification['fraud_status'] ?? null) !== 'accept') {
                 return;
@@ -213,11 +218,14 @@ class OrderController extends Controller
 
             $order->update([
                 'status' => 'Siap Diambil',
-                'paid_at' => now(),
-                'midtrans_transaction_id' => $transactionId,
+                'paid_at' => $order->paid_at ?? now(),
+                'midtrans_transaction_id' => $order->midtrans_transaction_id ?? $transactionId,
             ]);
         } elseif ($transactionStatus === 'pending') {
-            $order->update(['status' => 'Menunggu Pembayaran']);
+            // Jangan turunkan status yang sudah lunas menjadi "menunggu" lagi
+            if ($order->status !== 'Siap Diambil') {
+                $order->update(['status' => 'Menunggu Pembayaran']);
+            }
         } elseif (in_array($transactionStatus, ['deny', 'cancel', 'expire', 'refund'])) {
             $order->update(['status' => 'Dibatalkan']);
         }
@@ -226,7 +234,7 @@ class OrderController extends Controller
     // Verifikasi signature webhook Midtrans
     private function verifySignature($orderId, $statusCode, $grossAmount, $signatureKey): bool
     {
-        if (!$signatureKey) {
+        if (!$signatureKey || !is_string($signatureKey)) {
             return false;
         }
 
@@ -237,7 +245,8 @@ class OrderController extends Controller
 
     private function grossAmountMatches(Order $order, $grossAmount): bool
     {
-        return abs((float) $order->total_amount - (float) $grossAmount) < 0.01;
+        // Bandingkan setelah pembulatan agar konsisten dengan gross_amount yang dikirim ke Midtrans
+        return (int) round((float) $order->total_amount) === (int) round((float) $grossAmount);
     }
 
     // Setting enable_qris (default aktif bila belum diatur)

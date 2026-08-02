@@ -160,4 +160,63 @@ class OrderWebhookTest extends TestCase
 
         $response->assertStatus(404);
     }
+
+    public function test_capture_with_accept_fraud_status_marks_order_ready(): void
+    {
+        $user = $this->makeUser();
+        $order = $this->makeOrder($user);
+
+        $response = $this->postJson('/api/orders/webhook', $this->notification([
+            'order_id' => $order->order_code,
+            'transaction_status' => 'capture',
+            'fraud_status' => 'accept',
+        ]));
+
+        $response->assertOk();
+        $this->assertSame('Siap Diambil', $order->fresh()->status);
+    }
+
+    public function test_stale_pending_does_not_regress_paid_order(): void
+    {
+        $user = $this->makeUser();
+        $order = $this->makeOrder($user);
+        $order->update(['status' => 'Siap Diambil', 'paid_at' => now()]);
+
+        $response = $this->postJson('/api/orders/webhook', $this->notification([
+            'order_id' => $order->order_code,
+            'transaction_status' => 'pending',
+        ]));
+
+        $response->assertOk();
+        $this->assertSame('Siap Diambil', $order->fresh()->status);
+    }
+
+    public function test_terminal_status_is_not_regressed_by_late_webhook(): void
+    {
+        $user = $this->makeUser();
+        $order = $this->makeOrder($user);
+        $order->update(['status' => 'Selesai', 'paid_at' => now(), 'picked_up_at' => now()]);
+
+        $response = $this->postJson('/api/orders/webhook', $this->notification([
+            'order_id' => $order->order_code,
+            'transaction_status' => 'settlement',
+        ]));
+
+        $response->assertOk();
+        $this->assertSame('Selesai', $order->fresh()->status);
+    }
+
+    public function test_paid_at_is_not_overwritten_by_duplicate_settlement(): void
+    {
+        $user = $this->makeUser();
+        $order = $this->makeOrder($user);
+        $firstPaidAt = now()->subHour();
+        $order->update(['status' => 'Siap Diambil', 'paid_at' => $firstPaidAt]);
+
+        $this->postJson('/api/orders/webhook', $this->notification([
+            'order_id' => $order->order_code,
+        ]))->assertOk();
+
+        $this->assertSame($firstPaidAt->toDateTimeString(), $order->fresh()->paid_at);
+    }
 }
