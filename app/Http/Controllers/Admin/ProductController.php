@@ -9,16 +9,6 @@ use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-
-require_once base_path('vendor/picqer/php-barcode-generator/src/Barcode.php');
-require_once base_path('vendor/picqer/php-barcode-generator/src/BarcodeBar.php');
-require_once base_path('vendor/picqer/php-barcode-generator/src/BarcodeGenerator.php');
-require_once base_path('vendor/picqer/php-barcode-generator/src/BarcodeGeneratorPNG.php');
-require_once base_path('vendor/picqer/php-barcode-generator/src/Types/TypeInterface.php');
-require_once base_path('vendor/picqer/php-barcode-generator/src/Types/TypeCode128.php');
-require_once base_path('vendor/picqer/php-barcode-generator/src/Exceptions/BarcodeException.php');
-require_once base_path('vendor/picqer/php-barcode-generator/src/Helpers/BinarySequenceConverter.php');
-
 use Picqer\Barcode\BarcodeGeneratorPNG;
 
 class ProductController extends Controller
