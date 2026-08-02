@@ -79,3 +79,17 @@
 - `ExampleTest` bawaan dihapus dan diganti test sungguhan (design F).
 - JS auto-poll di `orders/index.blade.php` menggunakan endpoint `check-status`; tombol "Periksa Status Pembayaran" ditampilkan juga saat QRIS nonaktif (agar siswa tetap bisa cek pesanan qris lama).
 - `payQris` & `checkStatus` memakai `app(MidtransService::class)` (container) agar bisa di-mock di test, bukan `new MidtransService()`.
+
+## Hasil Code Review (2026-08-02)
+
+Reviewer menemukan: HEAD mereferensikan file yang belum di-commit (HomeController, success.blade.php, printBarcode — pre-existing sejak base 82175e0, bukan regresi). Perbaikan yang diterapkan:
+
+1. **Commit dependensi** (HomeController, home.blade.php, success.blade.php, ProductController, print-barcode views, migrasi barcode_image) agar HEAD self-contained.
+2. **Guard transisi status terminal** di `applyMidtransStatus`: status `Selesai`/`Dibatalkan` tidak boleh diregresi webhook yang tiba tidak urut; `pending` tidak menurunkan `Siap Diambil`; `paid_at` & `midtrans_transaction_id` hanya diisi jika belum ada.
+3. **Pembulatan nominal konsisten**: `gross_amount` dikirim sebagai `(int) round(total)`; `grossAmountMatches` membandingkan hasil round di kedua sisi (total pecahan tidak lagi gagal bayar).
+4. **Hardening webhook**: type-check `status_code`/`gross_amount`/`signature_key` (cegah TypeError dari payload array), pesan error 500 generik (tidak bocorkan exception).
+5. **Hapus `MidtransService::verifyWebhookSignature`** (perbandingan `===` tidak timing-safe, tak terpakai).
+6. **Hapus endpoint `/api/user-latest-order`** (tak dipakai di mana pun).
+7. Email pelanggan fallback ke username; snap.js di halaman checkout hanya dimuat saat QRIS aktif.
+8. **Test baru (total 23)**: capture+accept, pending basi tidak meregresi Siap Diambil, status terminal tidak diregresi, paid_at tidak ditimpa settlement duplikat, check-status meng-assert midtrans_transaction_id, checkout qris aktif benar-benar membuat order.
+9. Reviewer salah di poin `.env.example` — kunci MIDTRANS sudah ada (baris 54–58), tidak ada perbaikan.
