@@ -136,6 +136,14 @@ class OrderController extends Controller
                 'status' => $order->fresh()->status,
             ]);
         } catch (\Exception $e) {
+            // Transaksi belum pernah dibuat di Midtrans (mis. order lama) — bukan error fatal
+            if (str_contains($e->getMessage(), '404')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Belum ada transaksi pembayaran. Silakan buka pembayaran QRIS terlebih dahulu.',
+                ]);
+            }
+
             Log::warning('Midtrans check status failed', [
                 'order_code' => $order->order_code,
                 'message' => $e->getMessage(),

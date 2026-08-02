@@ -1,95 +1,63 @@
 @extends('layouts.siswa')
 
+@section('title', 'Beranda Siswa')
+@section('page_title', 'Beranda')
+
 @section('content')
-<div>
-    <!-- HERO / SALAM -->
-    <div class="mb-8 bg-gradient-to-r from-brand-800 to-brand-900 rounded-3xl p-8 text-white relative overflow-hidden shadow-lg">
-        <div class="relative z-10 max-w-xl">
-            <span class="px-3 py-1 bg-white/20 text-xs font-semibold rounded-full backdrop-blur-sm mb-3 inline-block">Koperasi Sekolah</span>
-            <h2 class="text-3xl font-bold mb-2">Selamat Datang, {{ auth()->user()->name }}! 👋</h2>
-            <p class="text-brand-100 text-sm leading-relaxed">Pesan seragam sekolah kamu dengan mudah, bayar secara Cash di kasir atau langsung via QRIS secara cepat dan praktis.</p>
+<!-- Hero -->
+<div class="hero-section mb-5 fade-in" data-aos="fade-up">
+    <div class="position-relative" style="z-index:2">
+        <span class="hero-badge"><i class="bi bi-patch-check-fill" style="color:var(--accent)"></i> Koperasi Sekolah</span>
+        <h1>Selamat Datang, {{ auth()->user()->name }}!</h1>
+        <p>Pesan seragam sekolah kamu dengan mudah, bayar secara Cash di kasir atau langsung via QRIS secara cepat dan praktis.</p>
+    </div>
+</div>
+
+<!-- Stats -->
+<div class="mb-5">
+    <h5 class="fw-bold mb-3" data-aos="fade-up">Ringkasan Transaksi Saya</h5>
+    <div class="row g-4">
+        <div class="col-sm-6 col-xl-3" data-aos="fade-up">
+            <div class="stat-card"><div><div class="stat-label">Total Pesanan</div><div class="stat-value">{{ $totalPesanan }}</div></div><div class="stat-icon stat-icon-primary"><i class="bi bi-clipboard-check-fill"></i></div></div>
+        </div>
+        <div class="col-sm-6 col-xl-3" data-aos="fade-up" data-aos-delay="50">
+            <div class="stat-card"><div><div class="stat-label">Menunggu Pembayaran</div><div class="stat-value" style="color:var(--warning)">{{ $pesananMenunggu }}</div></div><div class="stat-icon stat-icon-warning"><i class="bi bi-clock-fill"></i></div></div>
+        </div>
+        <div class="col-sm-6 col-xl-3" data-aos="fade-up" data-aos-delay="100">
+            <div class="stat-card"><div><div class="stat-label">Siap Diambil</div><div class="stat-value" style="color:var(--info)">{{ $pesananSiap }}</div></div><div class="stat-icon stat-icon-info"><i class="bi bi-shop"></i></div></div>
+        </div>
+        <div class="col-sm-6 col-xl-3" data-aos="fade-up" data-aos-delay="150">
+            <div class="stat-card"><div><div class="stat-label">Pesanan Selesai</div><div class="stat-value" style="color:var(--success)">{{ $pesananSelesai }}</div></div><div class="stat-icon stat-icon-success"><i class="bi bi-check-circle-fill"></i></div></div>
         </div>
     </div>
+</div>
 
-    <!-- STATISTIK RINGKASAN TRANSAKSI -->
-    <div class="mb-8">
-        <h3 class="font-bold text-lg text-gray-900 mb-4">Ringkasan Transaksi Saya</h3>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            <!-- Stat 1: Total Pesanan -->
-            <div class="bg-white p-5 rounded-2xl border border-brand-200 shadow-sm flex items-center gap-4">
-                <div class="w-12 h-12 bg-brand-100 text-brand-800 rounded-xl flex items-center justify-center text-xl">
-                    <i class="fa-solid fa-clipboard-list"></i>
-                </div>
-                <div>
-                    <p class="text-xs text-gray-500 font-medium">Total Pesanan</p>
-                    <h4 class="text-xl font-bold text-gray-900">{{ $totalPesanan }}</h4>
-                </div>
-            </div>
-
-            <!-- Stat 2: Menunggu Pembayaran -->
-            <div class="bg-white p-5 rounded-2xl border border-brand-200 shadow-sm flex items-center gap-4">
-                <div class="w-12 h-12 bg-amber-100 text-amber-800 rounded-xl flex items-center justify-center text-xl">
-                    <i class="fa-solid fa-clock"></i>
-                </div>
-                <div>
-                    <p class="text-xs text-gray-500 font-medium">Menunggu Pembayaran</p>
-                    <h4 class="text-xl font-bold text-gray-900">{{ $pesananMenunggu }}</h4>
-                </div>
-            </div>
-
-            <!-- Stat 3: Siap Diambil -->
-            <div class="bg-white p-5 rounded-2xl border border-brand-200 shadow-sm flex items-center gap-4">
-                <div class="w-12 h-12 bg-blue-100 text-blue-800 rounded-xl flex items-center justify-center text-xl">
-                    <i class="fa-solid fa-store"></i>
-                </div>
-                <div>
-                    <p class="text-xs text-gray-500 font-medium">Siap Diambil</p>
-                    <h4 class="text-xl font-bold text-gray-900">{{ $pesananSiap }}</h4>
-                </div>
-            </div>
-
-            <!-- Stat 4: Selesai -->
-            <div class="bg-white p-5 rounded-2xl border border-brand-200 shadow-sm flex items-center gap-4">
-                <div class="w-12 h-12 bg-emerald-100 text-emerald-800 rounded-xl flex items-center justify-center text-xl">
-                    <i class="fa-solid fa-circle-check"></i>
-                </div>
-                <div>
-                    <p class="text-xs text-gray-500 font-medium">Pesanan Selesai</p>
-                    <h4 class="text-xl font-bold text-gray-900">{{ $pesananSelesai }}</h4>
-                </div>
-            </div>
-        </div>
+<!-- Products -->
+<div data-aos="fade-up">
+    <div class="section-header">
+        <h5 class="fw-bold">Rekomendasi Seragam</h5>
+        <a href="{{ route('siswa.products.index') }}" style="font-size:.8rem;font-weight:600;color:var(--primary)">Lihat Semua Katalog <i class="bi bi-arrow-right"></i></a>
     </div>
-
-    <!-- KATALOG RINGKAS PRODUK -->
-    <div>
-        <div class="flex items-center justify-between mb-4">
-            <h3 class="font-bold text-lg text-gray-900">Rekomendasi Seragam</h3>
-            <a href="{{ route('siswa.products.index') }}" class="text-xs font-bold text-brand-800 hover:underline flex items-center gap-1">
-                <span>Lihat Semua Katalog</span>
-                <i class="fa-solid fa-arrow-right"></i>
-            </a>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            @foreach($products as $product)
-                <div class="bg-white rounded-2xl border border-brand-200 overflow-hidden shadow-sm hover:shadow-md transition group">
-                    <div class="h-48 bg-brand-100 relative overflow-hidden flex items-center justify-center p-4">
-                        <img src="{{ $product->image ? asset('storage/'.$product->image) : 'https://placehold.co/400x400/EAE5DD/4A2E1B?text='.urlencode($product->name) }}" 
-                             alt="{{ $product->name }}" 
-                             class="max-h-full object-contain group-hover:scale-105 transition duration-300">
-                    </div>
-                    <div class="p-5">
-                        <span class="text-[10px] font-bold text-brand-800 uppercase bg-brand-100 px-2 py-1 rounded-md">{{ $product->category->name ?? 'Seragam' }}</span>
-                        <h4 class="font-bold text-gray-900 text-base mt-2 line-clamp-1">{{ $product->name }}</h4>
-                        <p class="text-brand-800 font-bold text-lg mt-1">Rp {{ number_format($product->price, 0, ',', '.') }}</p>
-                        <a href="{{ route('siswa.products.index') }}" class="mt-4 w-full block text-center py-2.5 bg-brand-800 text-white font-semibold rounded-xl text-xs hover:bg-brand-900 transition">
-                            Lihat Katalog
-                        </a>
-                    </div>
+    <div class="row g-4">
+        @foreach($products as $product)
+        <div class="col-sm-6 col-lg-3" data-aos="fade-up" data-aos-delay="{{ $loop->index * 75 }}">
+            <div class="product-card">
+                <div class="product-image">
+                    @if($product->image)
+                        <img src="{{ asset('storage/'.$product->image) }}" alt="{{ $product->name }}">
+                    @else
+                        <div class="text-center"><i class="bi bi-bag" style="font-size:2.5rem;color:var(--primary);opacity:.3"></i></div>
+                    @endif
                 </div>
-            @endforeach
+                <div class="product-body">
+                    <span class="product-category">{{ $product->category->name ?? 'Seragam' }}</span>
+                    <h5 class="product-name">{{ $product->name }}</h5>
+                    <p class="product-price">Rp {{ number_format($product->sell_price ?? $product->price, 0, ',', '.') }}</p>
+                    <a href="{{ route('siswa.products.index') }}" class="btn-primary-custom w-100 justify-center btn-sm-custom">Lihat Katalog</a>
+                </div>
+            </div>
         </div>
+        @endforeach
     </div>
 </div>
 @endsection

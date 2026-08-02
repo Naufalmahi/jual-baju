@@ -4,75 +4,67 @@
 @section('page_title', 'Kelola Data Kelas & Jurusan')
 
 @section('content')
-<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-
-    <!-- FORM TAMBAH KELAS -->
-    <div class="bg-white p-6 rounded-xl shadow h-fit">
-        <h3 class="text-md font-bold text-gray-800 mb-4">Tambah Kelas Baru</h3>
-        <form action="{{ route('superadmin.classes.store') }}" method="POST" class="space-y-4">
-            @csrf
-            <div>
-                <label class="block text-xs font-bold text-gray-600 mb-1">Nama Kelas</label>
-                <input type="text" name="class_name" placeholder="Contoh: XI RPL 1" required class="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500">
+<div class="row g-4">
+    <!-- Form Tambah Kelas -->
+    <div class="col-lg-4" data-aos="fade-up">
+        <div class="card-custom h-100">
+            <div class="card-body-custom">
+                <h6 class="fw-bold mb-4">Tambah Kelas Baru</h6>
+                <form action="{{ route('superadmin.classes.store') }}" method="POST">
+                    @csrf
+                    <div class="mb-3"><label class="form-label-custom">Nama Kelas</label><input type="text" name="class_name" placeholder="Contoh: XI RPL 1" required class="form-control-custom w-100"></div>
+                    <div class="mb-3">
+                        <label class="form-label-custom">Tingkat</label>
+                        <select name="grade" required class="form-select-custom w-100">
+                            <option value="X">X</option>
+                            <option value="XI">XI</option>
+                            <option value="XII">XII</option>
+                        </select>
+                    </div>
+                    <div class="mb-3"><label class="form-label-custom">Jurusan</label><input type="text" name="major" placeholder="Contoh: Rekayasa Perangkat Lunak" required class="form-control-custom w-100"></div>
+                    <button type="submit" class="btn-primary-custom w-100 justify-center">Simpan Kelas</button>
+                </form>
             </div>
-
-            <div>
-                <label class="block text-xs font-bold text-gray-600 mb-1">Tingkat</label>
-                <select name="grade" required class="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500">
-                    <option value="X">X</option>
-                    <option value="XI">XI</option>
-                    <option value="XII">XII</option>
-                </select>
-            </div>
-
-            <div>
-                <label class="block text-xs font-bold text-gray-600 mb-1">Jurusan</label>
-                <input type="text" name="major" placeholder="Contoh: Rekayasa Perangkat Lunak" required class="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500">
-            </div>
-
-            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 rounded-lg text-sm transition">
-                Simpan Kelas
-            </button>
-        </form>
+        </div>
     </div>
 
-    <!-- TABEL DAFTAR KELAS -->
-    <div class="md:col-span-2 bg-white rounded-xl shadow overflow-hidden">
-        <table class="w-full text-left border-collapse">
-            <thead class="bg-gray-50 border-b">
-                <tr>
-                    <th class="p-4 text-xs font-bold text-gray-500 uppercase">Nama Kelas</th>
-                    <th class="p-4 text-xs font-bold text-gray-500 uppercase">Tingkat</th>
-                    <th class="p-4 text-xs font-bold text-gray-500 uppercase">Jurusan</th>
-                    <th class="p-4 text-xs font-bold text-gray-500 uppercase">Siswa</th>
-                    <th class="p-4 text-xs font-bold text-gray-500 uppercase text-center">Aksi</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y text-sm">
-                @forelse($classes as $class)
-                <tr class="hover:bg-gray-50">
-                    <td class="p-4 font-semibold text-gray-800">{{ $class->class_name }}</td>
-                    <td class="p-4 text-gray-600">{{ $class->grade }}</td>
-                    <td class="p-4 text-gray-600">{{ $class->major }}</td>
-                    <td class="p-4 text-gray-600">{{ $class->students_count }} Siswa</td>
-                    <td class="p-4 text-center">
-                        <form action="{{ route('superadmin.classes.destroy', $class->id) }}" method="POST" onsubmit="return confirm('Hapus kelas ini?')">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs font-semibold">
-                                Hapus
-                            </button>
-                        </form>
-                    </td>
-                </tr>
-                @empty
-                <tr>
-                    <td colspan="5" class="p-4 text-center text-gray-500">Belum ada data kelas.</td>
-                </tr>
-                @endforelse
-            </tbody>
-        </table>
+    <!-- Tabel Kelas -->
+    <div class="col-lg-8" data-aos="fade-up">
+        <div class="card-custom">
+            <div class="card-body-custom">
+                <div class="table-responsive">
+                    <table class="table-custom mb-0">
+                        <thead>
+                            <tr>
+                                <th>Nama Kelas</th>
+                                <th>Tingkat</th>
+                                <th>Jurusan</th>
+                                <th>Siswa</th>
+                                <th class="text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($classes as $class)
+                            <tr>
+                                <td class="fw-semibold">{{ $class->class_name }}</td>
+                                <td>{{ $class->grade }}</td>
+                                <td>{{ $class->major }}</td>
+                                <td>{{ $class->students_count }} Siswa</td>
+                                <td class="text-center">
+                                    <form action="{{ route('superadmin.classes.destroy', $class->id) }}" method="POST" onsubmit="return confirm('Hapus kelas ini?')">
+                                        @csrf @method('DELETE')
+                                        <button type="submit" class="btn-danger-custom btn-sm-custom">Hapus</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr><td colspan="5" class="text-center" style="padding:32px;color:var(--neutral-400)">Belum ada data kelas.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
-
 </div>
 @endsection

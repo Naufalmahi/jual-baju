@@ -1,98 +1,66 @@
 @extends('layouts.siswa')
 
+@section('title', 'Profil Saya')
+@section('page_title', 'Profil Saya')
+
 @section('content')
 @php
-    $photoUrl = 'https://ui-avatars.com/api/?name='.urlencode($user->name).'&background=EAE5DD&color=4A2E1B&size=150';
+    $photoUrl = 'https://ui-avatars.com/api/?name='.urlencode($user->name).'&background=0F4C81&color=fff&size=150';
     if (!empty($user->foto)) {
         $photoUrl = asset('storage/' . $user->foto) . '?v=' . time();
     }
 @endphp
 
-<div>
-    <div class="mb-6">
-        <h2 class="text-2xl font-bold text-gray-900">Profil Saya</h2>
-        <p class="text-gray-500 text-sm">Kelola informasi profil dan akun kamu</p>
-    </div>
+<div class="mb-4" data-aos="fade-up">
+    <h4 class="fw-bold" style="font-size:1.2rem">Profil Saya</h4>
+    <p style="font-size:.82rem;color:var(--neutral-500)">Kelola informasi profil dan akun kamu</p>
+</div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-        <!-- CARD KIRI: AVATAR -->
-        <div class="bg-white p-6 rounded-2xl border border-brand-200 flex flex-col items-center text-center shadow-sm">
-            <div class="relative mb-4">
-                <img src="{{ $photoUrl }}" 
-                     alt="Foto Profil" 
-                     class="w-36 h-36 rounded-full object-cover border-4 border-brand-100 shadow-sm">
-                
-                <button type="button" onclick="document.getElementById('photoInput').click()" 
-                        class="absolute bottom-1 right-1 bg-white border border-gray-200 text-gray-700 w-10 h-10 rounded-full flex items-center justify-center shadow hover:bg-brand-100 transition"
-                        title="Ubah Foto">
-                    <i class="fa-solid fa-camera"></i>
+<div class="row g-4">
+    <div class="col-lg-4" data-aos="fade-up">
+        <div class="card-custom text-center" style="padding:32px 24px">
+            <div class="position-relative d-inline-block mb-3">
+                <img src="{{ $photoUrl }}" alt="Foto Profil" style="width:110px;height:110px;border-radius:50%;object-fit:cover;border:4px solid var(--primary-lighter)">
+                <button type="button" onclick="document.getElementById('photoInput').click()" style="position:absolute;bottom:2px;right:2px;width:34px;height:34px;border-radius:50%;background:var(--white);border:1px solid var(--neutral-200);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:var(--shadow-sm);transition:var(--transition)">
+                    <i class="bi bi-camera" style="font-size:.8rem;color:var(--neutral-600)"></i>
                 </button>
             </div>
-
-            <!-- Form Upload Foto -->
-            <form id="photoForm" action="{{ route('siswa.profile.photo') }}" method="POST" enctype="multipart/form-data" class="hidden">
-                @csrf
-                <input type="file" id="photoInput" name="photo" accept="image/*" onchange="document.getElementById('photoForm').submit()">
-            </form>
-
-            <h3 class="text-xl font-bold text-gray-900 mb-1">{{ $user->name }}</h3>
-            <span class="px-3 py-1 bg-brand-100 text-brand-800 text-xs font-semibold rounded-full mb-4">Siswa</span>
-
-            <div class="w-full space-y-2 text-left text-xs text-gray-600 border-t border-gray-100 pt-4 mb-6">
-                <div class="flex items-center gap-2">
-                    <i class="fa-solid fa-id-card text-brand-800 w-4"></i>
-                    <span>NISN: {{ $user->nisn_nip ?? $user->username ?? $user->nis }}</span>
-                </div>
-                <div class="flex items-center gap-2">
-                    <i class="fa-solid fa-graduation-cap text-brand-800 w-4"></i>
-                    <span>Kelas: {{ $user->kelas->name ?? $user->classModel->name ?? $user->kelas ?? 'Terdaftar' }}</span>
-                </div>
+            <form id="photoForm" action="{{ route('siswa.profile.photo') }}" method="POST" enctype="multipart/form-data" class="d-none">@csrf<input type="file" id="photoInput" name="photo" accept="image/*" onchange="document.getElementById('photoForm').submit()"></form>
+            <h5 class="fw-bold mb-1">{{ $user->name }}</h5>
+            <span class="badge-custom badge-primary mb-3">Siswa</span>
+            <div class="text-start pt-3" style="border-top:1px solid var(--neutral-100);font-size:.8rem;color:var(--neutral-600)">
+                <div class="mb-2"><i class="bi bi-person-badge me-2" style="color:var(--primary)"></i>NISN: {{ $user->nisn_nip ?? $user->username ?? '-' }}</div>
+                <div><i class="bi bi-building me-2" style="color:var(--primary)"></i>Kelas: {{ $user->classModel->class_name ?? $user->kelas ?? '-' }}</div>
             </div>
+        </div>
+    </div>
 
-            <button type="button" onclick="document.getElementById('photoInput').click()" 
-                    class="w-full py-2.5 px-4 bg-white border border-gray-300 text-gray-700 font-semibold rounded-xl text-sm hover:bg-brand-100 transition flex items-center justify-center gap-2">
-                <i class="fa-solid fa-camera"></i>
-                <span>Ubah Foto</span>
-            </button>
+    <div class="col-lg-8">
+        <div class="form-card mb-4" data-aos="fade-up">
+            <div class="form-card-title">Informasi Pribadi</div>
+            <div class="d-flex justify-content-between py-3" style="border-bottom:1px solid var(--neutral-100)">
+                <span style="color:var(--neutral-500);font-size:.85rem">NIS / NISN</span>
+                <span class="fw-bold" style="font-size:.9rem">{{ $user->nisn_nip ?? $user->username ?? '-' }}</span>
+            </div>
+            <div class="d-flex justify-content-between py-3" style="border-bottom:1px solid var(--neutral-100)">
+                <span style="color:var(--neutral-500);font-size:.85rem">Nama Lengkap</span>
+                <span class="fw-bold" style="font-size:.9rem">{{ $user->name }}</span>
+            </div>
+            <div class="d-flex justify-content-between py-3">
+                <span style="color:var(--neutral-500);font-size:.85rem">Kelas</span>
+                <span class="fw-bold" style="font-size:.9rem">{{ $user->classModel->class_name ?? $user->kelas ?? '-' }}</span>
+            </div>
         </div>
 
-        <!-- CARD KANAN: INFORMASI PRIBADI SINKRON -->
-        <div class="lg:col-span-2 space-y-6">
-            <div class="bg-white p-6 rounded-2xl border border-brand-200 shadow-sm">
-                <div class="mb-6">
-                    <h3 class="font-bold text-lg text-gray-900">Informasi Pribadi</h3>
-                </div>
-
-                <div class="divide-y divide-gray-100 text-sm">
-                    <div class="py-4 flex justify-between items-center">
-                        <span class="text-gray-500 font-medium">NIS / NISN</span>
-                        <!-- Menggunakan nisn_nip / username sesuai DB Admin -->
-                        <span class="text-gray-900 font-bold text-base">{{ $user->nisn_nip ?? $user->username ?? $user->nis }}</span>
-                    </div>
-                    <div class="py-4 flex justify-between items-center">
-                        <span class="text-gray-500 font-medium">Nama Lengkap</span>
-                        <span class="text-gray-900 font-bold text-base">{{ $user->name }}</span>
-                    </div>
-                    <div class="py-4 flex justify-between items-center">
-                        <span class="text-gray-500 font-medium">Kelas</span>
-                        <span class="text-gray-900 font-bold text-base">{{ $user->kelas->name ?? $user->classModel->name ?? $user->kelas ?? 'XI RPL 2' }}</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- CATATAN INFORMASI AKUN -->
-            <div class="bg-amber-50 p-6 rounded-2xl border border-amber-200 shadow-sm flex items-center gap-4">
-                <div class="w-12 h-12 bg-amber-100 text-amber-800 rounded-xl flex items-center justify-center text-lg flex-shrink-0">
-                    <i class="fa-solid fa-user-shield"></i>
-                </div>
+        <div class="card-custom" data-aos="fade-up" style="border-left:4px solid var(--accent)">
+            <div class="card-body-custom d-flex align-items-center gap-3">
+                <div class="stat-icon stat-icon-warning flex-shrink-0"><i class="bi bi-shield-lock"></i></div>
                 <div>
-                    <h4 class="font-bold text-amber-900 text-base">Informasi Akun Dikelola Admin</h4>
-                    <p class="text-xs text-amber-800">Data akun siswa (NISN & Nama) dibuat oleh Admin Sekolah. Jika terjadi kendala data, hubungi Kasir atau Admin Koperasi.</p>
+                    <h6 class="fw-bold mb-1" style="font-size:.88rem">Informasi Akun Dikelola Admin</h6>
+                    <p style="font-size:.78rem;color:var(--neutral-600);margin:0">Data akun siswa (NISN & Nama) dibuat oleh Admin Sekolah. Hubungi Kasir atau Admin jika ada kendala.</p>
                 </div>
             </div>
         </div>
-
     </div>
 </div>
 @endsection

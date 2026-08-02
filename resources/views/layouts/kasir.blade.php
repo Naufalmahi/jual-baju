@@ -3,111 +3,148 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Koperasi Sekolah - Panel Kasir</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        darkside: '#2C1A0E',
-                        brand: {
-                            50: '#FDFBF7',
-                            100: '#F9F6F0',
-                            200: '#EAE5DD',
-                            800: '#4A2E1B',
-                            900: '#3D2617',
-                        }
-                    }
-                }
+    <title>@yield('title', 'Koperasi Sekolah - Panel Kasir')</title>
+    
+    <!-- CSS Dependencies -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    <style>
+        /* Fallback Toggle Style */
+        @media (max-width: 991.98px) {
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: -260px;
+                width: 260px;
+                height: 100vh;
+                z-index: 1050;
+                transition: left 0.3s ease;
+            }
+            .sidebar.active {
+                left: 0;
+            }
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background: rgba(0,0,0,0.5);
+                z-index: 1040;
+            }
+            .sidebar-overlay.active {
+                display: block;
             }
         }
-    </script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style> body { font-family: 'Plus Jakarta Sans', sans-serif; } </style>
+    </style>
 </head>
-<body class="bg-brand-100 min-h-screen text-gray-800">
+<body>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-    <div class="flex min-h-screen">
-        <!-- SIDEBAR DARK -->
-        <aside class="w-64 bg-darkside text-white flex flex-col justify-between p-4 sticky top-0 h-screen">
-            <div>
-                <!-- LOGO & BRAND -->
-                <div class="flex items-center gap-3 px-3 py-4 mb-6 border-b border-white/10">
-                    <div class="w-10 h-10 bg-white text-darkside rounded-full flex items-center justify-center font-bold">
-                        <i class="fa-solid fa-shirt text-lg"></i>
-                    </div>
-                    <div>
-                        <h1 class="font-bold text-base uppercase tracking-wider leading-tight">Koperasi Sekolah</h1>
-                        <p class="text-[10px] text-gray-400">Seragam Berkualitas</p>
-                    </div>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <i class="bi bi-laptop" style="font-size:1.3rem;color:#FFC107"></i>
+            <span>KASIR</span>
+        </div>
+        <div class="sidebar-nav">
+            <div class="nav-section">Menu Utama</div>
+            <a href="{{ route('kasir.dashboard') }}" class="{{ request()->routeIs('kasir.dashboard') ? 'active' : '' }}">
+                <i class="bi bi-grid-1x2-fill"></i>
+                <span>Dashboard</span>
+            </a>
+            <div class="nav-section">Transaksi</div>
+            <a href="{{ route('kasir.orders.index') }}" class="{{ request()->routeIs('kasir.orders.*') ? 'active' : '' }}">
+                <i class="bi bi-bag-check-fill"></i>
+                <span>Kelola Pesanan</span>
+            </a>
+            <a href="{{ route('kasir.history.index') }}" class="{{ request()->routeIs('kasir.history.*') ? 'active' : '' }}">
+                <i class="bi bi-receipt-cutoff"></i>
+                <span>Riwayat Transaksi</span>
+            </a>
+            <a href="{{ route('kasir.reports.index') }}" class="{{ request()->routeIs('kasir.reports.*') ? 'active' : '' }}">
+                <i class="bi bi-bar-chart-line-fill"></i>
+                <span>Laporan</span>
+            </a>
+        </div>
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="user-avatar bg-warning d-flex align-items-center justify-content-center fw-bold" style="font-size:.75rem;color:#1F2937">KS</div>
+                <div>
+                    <div class="user-name">{{ Auth::user()->name ?? 'Kasir' }}</div>
+                    <div class="user-role">Kasir</div>
                 </div>
-
-                <!-- NAV MENU KASIR -->
-                <nav class="space-y-2">
-                    <a href="{{ route('kasir.dashboard') }}" 
-                       class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition {{ request()->routeIs('kasir.dashboard') ? 'bg-brand-100 text-darkside font-bold' : 'text-gray-300 hover:bg-white/10 hover:text-white' }}">
-                        <i class="fa-solid fa-house w-5"></i>
-                        <span>Dashboard</span>
-                    </a>
-
-                    <a href="{{ route('kasir.orders.index') }}" 
-                       class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition {{ request()->routeIs('kasir.orders.*') ? 'bg-brand-100 text-darkside font-bold' : 'text-gray-300 hover:bg-white/10 hover:text-white' }}">
-                        <i class="fa-solid fa-store w-5"></i>
-                        <span>Kelola Pesanan</span>
-                    </a>
-
-                    <a href="{{ route('kasir.history.index') }}" 
-                       class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition {{ request()->routeIs('kasir.history.*') ? 'bg-brand-100 text-darkside font-bold' : 'text-gray-300 hover:bg-white/10 hover:text-white' }}">
-                        <i class="fa-solid fa-receipt w-5"></i>
-                        <span>Riwayat Transaksi</span>
-                    </a>
-
-                    <a href="{{ route('kasir.reports.index') }}" 
-                       class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition {{ request()->routeIs('kasir.reports.*') ? 'bg-brand-100 text-darkside font-bold' : 'text-gray-300 hover:bg-white/10 hover:text-white' }}">
-                        <i class="fa-solid fa-chart-column w-5"></i>
-                        <span>Laporan</span>
-                    </a>
-                </nav>
             </div>
-
-            <!-- LOGOUT -->
-            <form action="{{ route('logout') }}" method="POST">
+            <form action="{{ route('logout') }}" method="POST" class="mt-2">
                 @csrf
-                <button type="submit" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm text-gray-400 hover:bg-red-500/20 hover:text-red-400 transition">
-                    <i class="fa-solid fa-right-from-bracket w-5"></i>
+                <button type="submit" class="sidebar-nav" style="margin:0;padding:8px 12px;width:100%;display:flex;align-items:center;gap:8px;color:rgba(255,255,255,.6);font-size:.8rem;border:none;background:none;cursor:pointer;border-radius:8px;">
+                    <i class="bi bi-box-arrow-right"></i>
                     <span>Logout</span>
                 </button>
             </form>
-        </aside>
+        </div>
+    </aside>
 
-        <!-- MAIN CONTENT AREA -->
-        <main class="flex-1 flex flex-col min-w-0">
-            <!-- HEADER TOPBAR -->
-            <header class="bg-white border-b border-brand-200 px-8 py-4 flex items-center justify-between sticky top-0 z-20">
-                <i class="fa-solid fa-bars text-gray-500 text-lg cursor-pointer"></i>
-                <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 bg-brand-200 text-brand-800 rounded-full flex items-center justify-center font-bold text-sm">
-                        <i class="fa-solid fa-user"></i>
-                    </div>
-                    <span class="text-sm font-semibold text-gray-800">{{ auth()->user()->name ?? 'Kasir 1' }}</span>
-                </div>
-            </header>
-
-            <!-- CONTENT -->
-            <div class="p-8">
-                @if(session('success'))
-                    <div class="mb-6 p-4 bg-green-50 border border-green-200 text-green-800 rounded-xl flex items-center gap-3">
-                        <i class="fa-solid fa-circle-check text-green-600"></i>
-                        <span>{{ session('success') }}</span>
-                    </div>
-                @endif
-                @yield('content')
+    <div class="main-content">
+        <nav class="top-navbar">
+            <button class="sidebar-toggle" id="sidebarToggle" type="button"><i class="bi bi-list"></i></button>
+            <div class="breadcrumb-custom d-none d-md-flex">
+                <span class="current">@yield('page_title', 'Dashboard Kasir')</span>
             </div>
-        </main>
+            <div class="topbar-right">
+                <span class="badge badge-warning">Kasir</span>
+                <span class="d-none d-sm-inline" style="font-size:.85rem;font-weight:600;color:var(--neutral-700)">{{ Auth::user()->name ?? 'Kasir' }}</span>
+            </div>
+        </nav>
+
+        <div class="page-content">
+            @if(session('success'))
+                <div class="alert alert-dismissible fade show d-flex align-items-center gap-2" role="alert" style="border-radius:var(--radius);border:none;border-left:4px solid var(--success);background:#d1fae5;color:#065f46;padding:12px 16px;font-size:.82rem;font-weight:500">
+                    <i class="bi bi-check-circle-fill" style="font-size:1.1rem;flex-shrink:0"></i>
+                    <span style="flex:1">{{ session('success') }}</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" style="font-size:.75rem"></button>
+                </div>
+            @endif
+            @if(session('error'))
+                <div class="alert alert-dismissible fade show d-flex align-items-center gap-2" role="alert" style="border-radius:var(--radius);border:none;border-left:4px solid var(--danger);background:#fee2e2;color:#991b1b;padding:12px 16px;font-size:.82rem;font-weight:500">
+                    <i class="bi bi-exclamation-triangle-fill" style="font-size:1.1rem;flex-shrink:0"></i>
+                    <span style="flex:1">{{ session('error') }}</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" style="font-size:.75rem"></button>
+                </div>
+            @endif
+            @yield('content')
+        </div>
     </div>
 
+    <!-- JS Dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <!-- Script Toggle Sidebar -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const toggleBtn = document.getElementById('sidebarToggle');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+
+            if (toggleBtn && sidebar && overlay) {
+                toggleBtn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    sidebar.classList.toggle('active');
+                    overlay.classList.toggle('active');
+                });
+
+                overlay.addEventListener('click', function () {
+                    sidebar.classList.remove('active');
+                    overlay.classList.remove('active');
+                });
+            }
+        });
+    </script>
 </body>
 </html>

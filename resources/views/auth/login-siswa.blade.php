@@ -3,76 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login Siswa - Toko & Koperasi Sekolah</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Login Siswa - SchoolWear</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    @vite(['resources/css/app.css'])
+    <style>
+        .auth-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:var(--radius-full);background:rgba(255,255,255,.12);backdrop-filter:blur(4px);font-size:.7rem;font-weight:600;border:1px solid rgba(255,255,255,.15);margin-bottom:16px;color:rgba(255,255,255,.85)}
+    </style>
 </head>
-<body class="bg-indigo-900 flex items-center justify-center h-screen">
-
-    <div class="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
-        <!-- HEADER LOGIN -->
-        <div class="text-center mb-6">
-            <div class="inline-flex items-center justify-center w-16 h-16 bg-indigo-100 text-indigo-600 rounded-full mb-3">
-                <i class="fas fa-user-graduate text-2xl"></i>
+<body>
+    <div class="auth-page-siswa">
+        <div class="auth-card-custom fade-in">
+            <div class="auth-brand">
+                <i class="bi bi-bag-fill"></i>
+                <span>SchoolWear</span>
             </div>
-            <h2 class="text-2xl font-bold text-gray-800">Portal Siswa</h2>
-            <p class="text-sm text-gray-500 mt-1">Masukkan Nomor Induk Siswa Nasional (NISN)</p>
-        </div>
+            <div class="auth-title">Masuk Siswa</div>
+            <div class="auth-subtitle">Masuk menggunakan NISN dan password</div>
 
-        <!-- NOTIFIKASI ERROR -->
-        @if ($errors->any())
-            <div class="mb-4 p-3 bg-red-100 border-l-4 border-red-500 text-red-700 text-sm rounded">
-                {{ $errors->first() }}
-            </div>
-        @endif
-
-        @if (session('success'))
-            <div class="mb-4 p-3 bg-green-100 border-l-4 border-green-500 text-green-700 text-sm rounded">
-                {{ session('success') }}
-            </div>
-        @endif
-
-        <!-- FORM LOGIN SISWA -->
-        <form action="{{ route('login.siswa.process') }}" method="POST" class="space-y-4">
-            @csrf
-            <div>
-                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">NIS (Angka)</label>
-                <div class="relative">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                        <i class="fas fa-id-card"></i>
-                    </span>
-                    <!-- inputmode="numeric" & pattern="[0-9]*" memaksa keyboard HP menampilkan tombol angka -->
-                    <input type="text" name="nisn" inputmode="numeric" pattern="[0-9]*" value="{{ old('nisn') }}" required autofocus 
-                        placeholder="Contoh: 202610123" 
-                        onkeypress="return event.charCode >= 48 && event.charCode <= 57"
-                        class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+            @if($errors->any())
+                <div class="auth-error">
+                    <i class="bi bi-exclamation-circle"></i>
+                    {{ $errors->first() }}
                 </div>
-            </div>
-
-            <div>
-                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Password</label>
-                <div class="relative">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                        <i class="fas fa-lock"></i>
-                    </span>
-                    <input type="password" name="password" required 
-                        placeholder="••••••••" 
-                        class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+            @endif
+            @if(session('success'))
+                <div class="auth-success">
+                    <i class="bi bi-check-circle"></i>
+                    {{ session('success') }}
                 </div>
+            @endif
+
+            <form method="POST" action="{{ route('login.siswa.process') }}">
+                @csrf
+                <div class="auth-input-group">
+                    <label class="auth-label">NISN</label>
+                    <input type="text" name="nisn" class="auth-input" placeholder="Masukkan NISN" value="{{ old('nisn') }}" required autofocus>
+                </div>
+                <div class="auth-input-group">
+                    <label class="auth-label">Password</label>
+                    <input type="password" name="password" class="auth-input" placeholder="Masukkan password" required>
+                </div>
+                <button type="submit" class="btn-primary-custom auth-btn">
+                    <i class="bi bi-box-arrow-in-right"></i> Masuk
+                </button>
+            </form>
+
+            <div class="auth-footer-text">
+                Petugas? <a href="{{ route('login.petugas') }}">Masuk di sini</a>
             </div>
-
-            <button type="submit" 
-                class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg text-sm transition shadow-md">
-                Masuk Portal Siswa
-            </button>
-        </form>
-
-        <div class="text-center mt-6">
-            <!-- <a href="{{ route('login.petugas') }}" class="text-xs text-indigo-600 hover:underline font-semibold">
-                Login sebagai Petugas Toko / Admin? <i class="fas fa-arrow-right ml-1"></i>
-            </a> -->
         </div>
     </div>
-
 </body>
 </html>

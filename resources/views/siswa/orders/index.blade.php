@@ -30,13 +30,17 @@
                         <button type="button" onclick="payWithMidtrans('{{ route('siswa.orders.payQris', $order->id) }}')" class="btn-success-custom btn-sm-custom">
                             <i class="bi bi-qr-code"></i> Bayar Sekarang
                         </button>
+                        @if($order->snap_token)
                         <button type="button" onclick="checkStatus('{{ route('siswa.orders.checkStatus', $order->id) }}')" class="btn-outline-custom btn-sm-custom">
                             <i class="bi bi-arrow-clockwise"></i> Periksa Status Pembayaran
                         </button>
+                        @endif
                     @elseif(strtolower($order->payment_method) === 'qris' && strtolower($order->status) === 'menunggu pembayaran')
+                        @if($order->snap_token)
                         <button type="button" onclick="checkStatus('{{ route('siswa.orders.checkStatus', $order->id) }}')" class="btn-outline-custom btn-sm-custom">
                             <i class="bi bi-arrow-clockwise"></i> Periksa Status Pembayaran
                         </button>
+                        @endif
                     @elseif(strtolower($order->payment_method) === 'cash' && strtolower($order->status) === 'menunggu pembayaran')
                         <span class="badge badge-warning" style="padding:8px 14px;font-size:.75rem"><i class="bi bi-info-circle me-1"></i> Bayar di Kasir</span>
                     @elseif(strtolower($order->status) === 'siap diambil')
@@ -90,7 +94,7 @@ function checkStatus(checkUrl) {
 
 // Auto-cek status pembayaran untuk pesanan QRIS yang masih menunggu
 document.addEventListener('DOMContentLoaded', function () {
-    var pendingOrderIds = JSON.parse('{!! json_encode($orders->where("payment_method", "qris")->where("status", "Menunggu Pembayaran")->pluck("id")) !!}');
+    var pendingOrderIds = JSON.parse('{!! json_encode($orders->where("payment_method", "qris")->where("status", "Menunggu Pembayaran")->whereNotNull("snap_token")->pluck("id")) !!}');
     pendingOrderIds.forEach(function (orderId) {
         fetch('/siswa/orders/' + orderId + '/check-status', { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json', 'Accept': 'application/json' } })
         .then(response => response.json())

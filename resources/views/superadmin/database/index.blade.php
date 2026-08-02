@@ -4,167 +4,88 @@
 @section('page_title', 'Pemeliharaan Database')
 
 @section('content')
-
-<!-- NOTIFIKASI SUKSES / ERROR -->
-@if(session('success'))
-    <div class="mb-6 p-4 bg-green-100 border-l-4 border-green-500 text-green-700 rounded shadow-sm flex items-center justify-between">
-        <div class="flex items-center gap-2">
-            <i class="fas fa-check-circle"></i>
-            <span>{{ session('success') }}</span>
+<div class="row g-4">
+    <!-- Backup DB -->
+    <div class="col-md-6 col-xl-3" data-aos="fade-up">
+        <div class="card-custom h-100" style="border-top:3px solid var(--info)">
+            <div class="card-body-custom d-flex flex-column">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div class="stat-icon stat-icon-info"><i class="bi bi-database"></i></div>
+                    <div><h6 class="fw-bold mb-0" style="font-size:.85rem">Backup DB</h6><span style="font-size:.7rem;color:var(--neutral-500)">Unduh cadangan data</span></div>
+                </div>
+                <p style="font-size:.75rem;color:var(--neutral-600);flex:1">Unduh seluruh struktur data dalam format <code style="background:var(--neutral-100);padding:2px 6px;border-radius:4px;color:var(--danger);font-size:.7rem">.sql</code></p>
+                <form action="{{ route('superadmin.database.backup') }}" method="POST">@csrf
+                    <button type="submit" class="btn-primary-custom w-100 justify-center" style="background:var(--info)"><i class="bi bi-download"></i> Download SQL</button>
+                </form>
+            </div>
         </div>
     </div>
-@endif
 
-@if(session('error'))
-    <div class="mb-6 p-4 bg-red-100 border-l-4 border-red-500 text-red-700 rounded shadow-sm flex items-center justify-between">
-        <div class="flex items-center gap-2">
-            <i class="fas fa-exclamation-triangle"></i>
-            <span>{{ session('error') }}</span>
+    <!-- Restore DB -->
+    <div class="col-md-6 col-xl-3" data-aos="fade-up" data-aos-delay="50">
+        <div class="card-custom h-100" style="border-top:3px solid var(--accent)">
+            <div class="card-body-custom d-flex flex-column">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div class="stat-icon stat-icon-warning"><i class="bi bi-cloud-upload"></i></div>
+                    <div><h6 class="fw-bold mb-0" style="font-size:.85rem">Restore DB</h6><span style="font-size:.7rem;color:var(--neutral-500)">Upload file backup</span></div>
+                </div>
+                <p style="font-size:.75rem;color:var(--neutral-600);flex:1">Kembalikan data dari file <code style="background:var(--neutral-100);padding:2px 6px;border-radius:4px;color:var(--accent);font-size:.7rem">.sql</code></p>
+                <form action="{{ route('superadmin.database.restore') }}" method="POST" enctype="multipart/form-data" onsubmit="return confirm('Yakin ingin menimpa database saat ini?')">
+                    @csrf
+                    <div class="mb-2"><input type="file" name="backup_file" accept=".sql" required class="form-control-custom w-100" style="font-size:.7rem"></div>
+                    <button type="submit" class="btn-accent-custom w-100 justify-center"><i class="bi bi-upload"></i> Restore Data</button>
+                </form>
+            </div>
         </div>
     </div>
-@endif
 
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-
-    <!-- CARD 1: BACKUP DATABASE -->
-    <div class="bg-white p-6 rounded-xl shadow border-t-4 border-blue-500 flex flex-col justify-between">
-        <div>
-            <div class="flex items-center gap-3 mb-4">
-                <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center text-xl">
-                    <i class="fas fa-database"></i>
+    <!-- Clear Cache -->
+    <div class="col-md-6 col-xl-3" data-aos="fade-up" data-aos-delay="100">
+        <div class="card-custom h-100" style="border-top:3px solid var(--success)">
+            <div class="card-body-custom d-flex flex-column">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div class="stat-icon stat-icon-success"><i class="bi bi-arrow-clockwise"></i></div>
+                    <div><h6 class="fw-bold mb-0" style="font-size:.85rem">Clear Cache</h6><span style="font-size:.7rem;color:var(--neutral-500)">Optimalkan performa</span></div>
                 </div>
-                <div>
-                    <h3 class="font-bold text-gray-800 text-base">Backup DB</h3>
-                    <p class="text-xs text-gray-500">Unduh cadangan data</p>
-                </div>
+                <p style="font-size:.75rem;color:var(--neutral-600);flex:1">Bersihkan cache route, config, dan tampilan Blade.</p>
+                <form action="{{ route('superadmin.database.clear-cache') }}" method="POST">@csrf
+                    <button type="submit" class="btn-success-custom w-100 justify-center"><i class="bi bi-arrow-clockwise"></i> Bersihkan Cache</button>
+                </form>
             </div>
-            <p class="text-xs text-gray-600 mb-6 leading-relaxed">
-                Unduh seluruh struktur data beserta isinya dalam bentuk file <code class="bg-gray-100 px-1 py-0.5 rounded text-red-500 font-mono">.sql</code> untuk cadangan.
-            </p>
         </div>
-
-        <form action="{{ route('superadmin.database.backup') }}" method="POST">
-            @csrf
-            <button type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-lg transition flex items-center justify-center gap-2">
-                <i class="fas fa-download"></i> Download SQL
-            </button>
-        </form>
     </div>
 
-    <!-- CARD 2: RESTORE DATABASE -->
-    <div class="bg-white p-6 rounded-xl shadow border-t-4 border-amber-500 flex flex-col justify-between">
-        <div>
-            <div class="flex items-center gap-3 mb-4">
-                <div class="w-10 h-10 bg-amber-100 text-amber-600 rounded-lg flex items-center justify-center text-xl">
-                    <i class="fas fa-file-upload"></i>
+    <!-- Reset Transaksi -->
+    <div class="col-md-6 col-xl-3" data-aos="fade-up" data-aos-delay="150">
+        <div class="card-custom h-100" style="border-top:3px solid var(--danger)">
+            <div class="card-body-custom d-flex flex-column">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div class="stat-icon stat-icon-danger"><i class="bi bi-trash3"></i></div>
+                    <div><h6 class="fw-bold mb-0" style="font-size:.85rem">Reset Transaksi</h6><span style="font-size:.7rem;color:var(--neutral-500)">Pergantian Tahun</span></div>
                 </div>
-                <div>
-                    <h3 class="font-bold text-gray-800 text-base">Restore DB</h3>
-                    <p class="text-xs text-gray-500">Upload file backup</p>
-                </div>
+                <p style="font-size:.75rem;color:var(--neutral-600);flex:1">Hapus seluruh riwayat transaksi. <span class="fw-bold" style="color:var(--danger)">Tidak bisa dibatalkan!</span></p>
+                <button type="button" onclick="document.getElementById('modalReset').style.display='flex'" class="btn-danger-custom w-100 justify-center"><i class="bi bi-exclamation-triangle"></i> Reset Transaksi</button>
             </div>
-            <p class="text-xs text-gray-600 mb-4 leading-relaxed">
-                Kembalikan data dari file <code class="bg-gray-100 px-1 py-0.5 rounded text-amber-600 font-mono">.sql</code> hasil backup jika data terhapus.
-            </p>
         </div>
-
-        <form action="{{ route('superadmin.database.restore') }}" method="POST" enctype="multipart/form-data" onsubmit="return confirm('Apakah Anda yakin ingin menimpa database saat ini dengan data dari file backup ini?')">
-            @csrf
-            <div class="mb-3">
-                <input type="file" name="backup_file" accept=".sql" required class="block w-full text-[11px] text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100 cursor-pointer border rounded-lg p-1">
-            </div>
-            <button type="submit" class="w-full py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-lg transition flex items-center justify-center gap-2">
-                <i class="fas fa-upload"></i> Restore Data
-            </button>
-        </form>
-    </div>
-
-    <!-- CARD 3: CLEAR SYSTEM CACHE -->
-    <div class="bg-white p-6 rounded-xl shadow border-t-4 border-emerald-500 flex flex-col justify-between">
-        <div>
-            <div class="flex items-center gap-3 mb-4">
-                <div class="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-lg flex items-center justify-center text-xl">
-                    <i class="fas fa-broom"></i>
-                </div>
-                <div>
-                    <h3 class="font-bold text-gray-800 text-base">Clear Cache</h3>
-                    <p class="text-xs text-gray-500">Optimalkan performa</p>
-                </div>
-            </div>
-            <p class="text-xs text-gray-600 mb-6 leading-relaxed">
-                Bersihkan cache route, config, dan tampilan Blade untuk memperbarui perubahan sistem aplikasi.
-            </p>
-        </div>
-        <form action="{{ route('superadmin.database.clear-cache') }}" method="POST">
-            @csrf
-            <button type="submit" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg transition flex items-center justify-center gap-2">
-                <i class="fas fa-sync-alt"></i> Bersihkan Cache
-            </button>
-        </form>
-    </div>
-
-    <!-- CARD 4: RESET TRANSAKSI LAMA -->
-    <div class="bg-white p-6 rounded-xl shadow border-t-4 border-red-500 flex flex-col justify-between">
-        <div>
-            <div class="flex items-center gap-3 mb-4">
-                <div class="w-10 h-10 bg-red-100 text-red-600 rounded-lg flex items-center justify-center text-xl">
-                    <i class="fas fa-trash-alt"></i>
-                </div>
-                <div>
-                    <h3 class="font-bold text-gray-800 text-base">Reset Transaksi</h3>
-                    <p class="text-xs text-gray-500">Pergantian Tahun</p>
-                </div>
-            </div>
-            <p class="text-xs text-gray-600 mb-6 leading-relaxed">
-                Menghapus seluruh riwayat transaksi untuk dikosongkan. <span class="text-red-600 font-bold">Aksi tidak bisa dibatalkan!</span>
-            </p>
-        </div>
-
-        <!-- Button Modal Trigger -->
-        <button type="button" onclick="toggleModal('modalReset')" class="w-full py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-lg transition flex items-center justify-center gap-2">
-            <i class="fas fa-exclamation-triangle"></i> Reset Transaksi
-        </button>
-    </div>
-
-</div>
-
-<!-- MODAL KONFIRMASI RESET DATA -->
-<div id="modalReset" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-xl max-w-md w-full p-6 shadow-2xl">
-        <div class="text-center mb-4">
-            <div class="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center text-2xl mx-auto mb-2">
-                <i class="fas fa-exclamation-triangle"></i>
-            </div>
-            <h3 class="text-lg font-bold text-gray-800">Konfirmasi Reset Data</h3>
-            <p class="text-xs text-gray-500 mt-1">Aksi ini akan menghapus semua riwayat transaksi kasir secara permanen.</p>
-        </div>
-
-        <form action="{{ route('superadmin.database.reset-transactions') }}" method="POST">
-            @csrf
-            <div class="mb-4">
-                <label class="block text-xs font-bold text-gray-700 mb-1">
-                    Ketik <span class="text-red-600 font-mono">HAPUS TRANSAKSI</span> untuk melanjutkan:
-                </label>
-                <input type="text" name="confirm_text" class="w-full border text-xs p-2.5 rounded-lg focus:ring-red-500 focus:border-red-500 font-mono" placeholder="HAPUS TRANSAKSI" required autocomplete="off">
-            </div>
-
-            <div class="flex gap-2">
-                <button type="button" onclick="toggleModal('modalReset')" class="w-1/2 py-2 bg-gray-200 text-gray-700 text-xs font-bold rounded-lg hover:bg-gray-300 transition">
-                    Batal
-                </button>
-                <button type="submit" class="w-1/2 py-2 bg-red-600 text-white text-xs font-bold rounded-lg hover:bg-red-700 transition">
-                    Ya, Reset Sekarang
-                </button>
-            </div>
-        </form>
     </div>
 </div>
 
-<script>
-    function toggleModal(id) {
-        const modal = document.getElementById(id);
-        modal.classList.toggle('hidden');
-    }
-</script>
-
+<!-- Modal Reset -->
+<div id="modalReset" style="position:fixed;inset:0;z-index:1060;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;padding:16px">
+    <div class="card-custom" style="max-width:440px;width:100%">
+        <div class="card-body-custom text-center">
+            <div class="mx-auto mb-3" style="width:48px;height:48px;border-radius:50%;background:#fee2e2;color:var(--danger);display:flex;align-items:center;justify-content:center;font-size:1.3rem"><i class="bi bi-exclamation-triangle"></i></div>
+            <h5 class="fw-bold mb-1">Konfirmasi Reset Data</h5>
+            <p style="font-size:.75rem;color:var(--neutral-500);margin-bottom:16px">Aksi ini akan menghapus semua riwayat transaksi kasir secara permanen.</p>
+            <form action="{{ route('superadmin.database.reset-transactions') }}" method="POST">
+                @csrf
+                <div class="mb-3 text-start"><label class="form-label-custom">Ketik <span class="fw-bold" style="color:var(--danger);font-family:monospace">HAPUS TRANSAKSI</span>:</label><input type="text" name="confirm_text" class="form-control-custom w-100" placeholder="HAPUS TRANSAKSI" required autocomplete="off"></div>
+                <div class="d-flex gap-2">
+                    <button type="button" onclick="document.getElementById('modalReset').style.display='none'" class="btn-outline-custom flex-fill">Batal</button>
+                    <button type="submit" class="btn-danger-custom flex-fill">Ya, Reset Sekarang</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 @endsection

@@ -3,74 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login Petugas - Toko & Koperasi Sekolah</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Login Petugas - SchoolWear</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    @vite(['resources/css/app.css'])
+    <style>
+        .auth-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:var(--radius-full);background:rgba(255,255,255,.08);backdrop-filter:blur(4px);font-size:.7rem;font-weight:600;border:1px solid rgba(255,255,255,.1);margin-bottom:16px;color:rgba(255,255,255,.7)}
+    </style>
 </head>
-<body class="bg-slate-900 flex items-center justify-center h-screen">
-
-    <div class="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
-        <!-- HEADER LOGIN -->
-        <div class="text-center mb-6">
-            <div class="inline-flex items-center justify-center w-16 h-16 bg-slate-100 text-slate-800 rounded-full mb-3 shadow-inner">
-                <i class="fas fa-user-shield text-2xl"></i>
+<body>
+    <div class="auth-page-petugas">
+        <div class="auth-card-custom fade-in">
+            <div class="auth-brand">
+                <i class="bi bi-shield-lock" style="color:var(--secondary)"></i>
+                <span>SchoolWear</span>
             </div>
-            <h2 class="text-2xl font-bold text-gray-800">Portal Petugas</h2>
-            <p class="text-sm text-gray-500 mt-1">Super Admin / Admin Toko / Kasir</p>
-        </div>
+            <div class="auth-title">Portal Petugas</div>
+            <div class="auth-subtitle">Masuk untuk Admin, Kasir, atau Super Admin</div>
 
-        <!-- NOTIFIKASI ERROR -->
-        @if ($errors->any())
-            <div class="mb-4 p-3 bg-red-100 border-l-4 border-red-500 text-red-700 text-sm rounded">
-                {{ $errors->first() }}
-            </div>
-        @endif
-
-        @if (session('success'))
-            <div class="mb-4 p-3 bg-green-100 border-l-4 border-green-500 text-green-700 text-sm rounded">
-                {{ session('success') }}
-            </div>
-        @endif
-
-        <!-- FORM LOGIN PETUGAS -->
-        <form action="{{ route('login.petugas.process') }}" method="POST" class="space-y-4">
-            @csrf
-            <div>
-                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Username Petugas</label>
-                <div class="relative">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                        <i class="fas fa-user"></i>
-                    </span>
-                    <input type="text" name="username" value="{{ old('username') }}" required autofocus
-                        placeholder="Masukkan username" 
-                        class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-slate-700 focus:outline-none">
+            @if($errors->any())
+                <div class="auth-error">
+                    <i class="bi bi-exclamation-circle"></i>
+                    {{ $errors->first() }}
                 </div>
-            </div>
-
-            <div>
-                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Password</label>
-                <div class="relative">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                        <i class="fas fa-lock"></i>
-                    </span>
-                    <input type="password" name="password" required 
-                        placeholder="••••••••" 
-                        class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-slate-700 focus:outline-none">
+            @endif
+            @if(session('success'))
+                <div class="auth-success">
+                    <i class="bi bi-check-circle"></i>
+                    {{ session('success') }}
                 </div>
+            @endif
+
+            <form method="POST" action="{{ route('login.petugas.process') }}">
+                @csrf
+                <div class="auth-input-group">
+                    <label class="auth-label">Username</label>
+                    <input type="text" name="username" class="auth-input" placeholder="Masukkan username" value="{{ old('username') }}" required autofocus>
+                </div>
+                <div class="auth-input-group">
+                    <label class="auth-label">Password</label>
+                    <input type="password" name="password" class="auth-input" placeholder="Masukkan password" required>
+                </div>
+                <button type="submit" class="btn-primary-custom auth-btn" style="background:var(--secondary)">
+                    <i class="bi bi-shield-lock"></i> Masuk
+                </button>
+            </form>
+
+            <div class="auth-footer-text">
+                Siswa? <a href="{{ route('login.siswa') }}" style="color:var(--secondary)">Masuk di sini</a>
             </div>
-
-            <button type="submit" 
-                class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 rounded-lg text-sm transition shadow-md">
-                Masuk Portal Petugas
-            </button>
-        </form>
-
-        <div class="text-center mt-6">
-            <a href="{{ route('login.siswa') }}" class="text-xs text-indigo-600 hover:underline font-semibold">
-                <i class="fas fa-arrow-left mr-1"></i> Kembali ke Login Siswa (NIS)
-            </a>
         </div>
     </div>
-
 </body>
 </html>

@@ -4,83 +4,151 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Super Admin - Sistem Sekolah')</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- CSS Dependencies -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    <style>
+        /* Fallback Toggle Style */
+        @media (max-width: 991.98px) {
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: -260px;
+                width: 260px;
+                height: 100vh;
+                z-index: 1050;
+                transition: left 0.3s ease;
+            }
+            .sidebar.active {
+                left: 0;
+            }
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background: rgba(0,0,0,0.5);
+                z-index: 1040;
+            }
+            .sidebar-overlay.active {
+                display: block;
+            }
+        }
+    </style>
 </head>
-<body class="bg-gray-100 font-sans">
+<body>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-    <div class="flex h-screen overflow-hidden">
-        <!-- SIDEBAR SUPER ADMIN -->
-        <aside class="w-64 bg-slate-900 text-white flex flex-col justify-between">
-            <div>
-                <div class="p-5 text-center font-bold text-lg border-b border-slate-800 tracking-wide">
-                    SUPER ADMIN
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <i class="bi bi-shield-lock-fill" style="font-size:1.3rem;color:#FFC107"></i>
+            <span>SUPER ADMIN</span>
+        </div>
+        <div class="sidebar-nav">
+            <div class="nav-section">Menu Utama</div>
+            <a href="{{ route('superadmin.dashboard') }}" class="{{ request()->routeIs('superadmin.dashboard') ? 'active' : '' }}">
+                <i class="bi bi-grid-1x2-fill"></i>
+                <span>Dashboard</span>
+            </a>
+            <div class="nav-section">Manajemen</div>
+            <a href="{{ route('superadmin.users.index') }}" class="{{ request()->routeIs('superadmin.users.*') ? 'active' : '' }}">
+                <i class="bi bi-person-gear"></i>
+                <span>Kelola Admin</span>
+            </a>
+            <a href="{{ route('superadmin.classes.index') }}" class="{{ request()->routeIs('superadmin.classes.*') ? 'active' : '' }}">
+                <i class="bi bi-building"></i>
+                <span>Master Kelas</span>
+            </a>
+            <div class="nav-section">Sistem</div>
+            <a href="{{ route('superadmin.database.index') }}" class="{{ request()->routeIs('superadmin.database.*') ? 'active' : '' }}">
+                <i class="bi bi-database-gear"></i>
+                <span>Database & System</span>
+            </a>
+            <a href="{{ route('superadmin.settings.index') }}" class="{{ request()->routeIs('superadmin.settings.*') ? 'active' : '' }}">
+                <i class="bi bi-gear-wide-connected"></i>
+                <span>Pengaturan</span>
+            </a>
+        </div>
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="user-avatar bg-primary d-flex align-items-center justify-content-center text-white fw-bold" style="font-size:.75rem">SA</div>
+                <div>
+                    <div class="user-name">{{ Auth::user()->name ?? 'Super Admin' }}</div>
+                    <div class="user-role">Super Admin</div>
                 </div>
-                <nav class="mt-5 px-4 space-y-2">
-                    <!-- Dashboard -->
-                    <a href="{{ route('superadmin.dashboard') }}" 
-                       class="flex items-center px-4 py-3 rounded-lg transition {{ request()->routeIs('superadmin.dashboard') ? 'bg-blue-600 text-white font-bold' : 'hover:bg-slate-800 text-slate-300' }}">
-                        <i class="fas fa-home w-6"></i> <span>Dashboard</span>
-                    </a>
-
-                    <!-- Kelola Admin -->
-                    <a href="{{ route('superadmin.users.index') }}" 
-                       class="flex items-center px-4 py-3 rounded-lg transition {{ request()->routeIs('superadmin.users.*') ? 'bg-blue-600 text-white font-bold' : 'hover:bg-slate-800 text-slate-300' }}">
-                        <i class="fas fa-user-shield w-6"></i> <span>Kelola Admin</span>
-                    </a>
-
-                    <!-- Master Kelas -->
-                    <a href="{{ route('superadmin.classes.index') }}" 
-                       class="flex items-center px-4 py-3 rounded-lg transition {{ request()->routeIs('superadmin.classes.*') ? 'bg-blue-600 text-white font-bold' : 'hover:bg-slate-800 text-slate-300' }}">
-                        <i class="fas fa-school w-6"></i> <span>Master Kelas</span>
-                    </a>
-
-                    <!-- Pemeliharaan Database & System -->
-                    <a href="{{ route('superadmin.database.index') }}" 
-                       class="flex items-center px-4 py-3 rounded-lg transition {{ request()->routeIs('superadmin.database.*') ? 'bg-blue-600 text-white font-bold' : 'hover:bg-slate-800 text-slate-300' }}">
-                        <i class="fas fa-database w-6"></i> <span>Database & System</span>
-                    </a>
-
-                    <!-- Pengaturan -->
-                    <a href="{{ route('superadmin.settings.index') }}" 
-                       class="flex items-center px-4 py-3 rounded-lg transition {{ request()->routeIs('superadmin.settings.*') ? 'bg-blue-600 text-white font-bold' : 'hover:bg-slate-800 text-slate-300' }}">
-                        <i class="fas fa-cog w-6"></i> <span>Pengaturan</span>
-                    </a>
-                </nav>
             </div>
-            
-            <!-- Logout Button -->
-            <div class="p-4 border-t border-slate-800">
-                <form action="{{ route('logout') }}" method="POST">
-                    @csrf
-                    <button type="submit" class="w-full flex items-center justify-center px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-sm font-semibold transition">
-                        <i class="fas fa-sign-out-alt mr-2"></i> Logout
-                    </button>
-                </form>
-            </div>
-        </aside>
+            <form action="{{ route('logout') }}" method="POST" class="mt-2">
+                @csrf
+                <button type="submit" class="sidebar-nav" style="margin:0;padding:8px 12px;width:100%;display:flex;align-items:center;gap:8px;color:rgba(255,255,255,.6);font-size:.8rem;border:none;background:none;cursor:pointer;border-radius:8px;">
+                    <i class="bi bi-box-arrow-right"></i>
+                    <span>Logout</span>
+                </button>
+            </form>
+        </div>
+    </aside>
 
-        <!-- MAIN CONTENT AREA -->
-        <div class="flex-1 flex flex-col overflow-y-auto">
-            <header class="bg-white shadow px-6 py-4 flex justify-between items-center">
-                <h1 class="text-xl font-bold text-gray-800">@yield('page_title', 'Dashboard Super Admin')</h1>
-                <div class="flex items-center space-x-3">
-                    <span class="text-sm font-medium text-gray-600">{{ Auth::user()->name ?? 'Super Admin' }}</span>
-                    <span class="px-2.5 py-1 text-xs bg-slate-200 text-slate-800 font-bold rounded-full">Super Admin</span>
+    <div class="main-content">
+        <nav class="top-navbar">
+            <button class="sidebar-toggle" id="sidebarToggle" type="button"><i class="bi bi-list"></i></button>
+            <div class="breadcrumb-custom d-none d-md-flex">
+                <span class="current">@yield('page_title', 'Dashboard')</span>
+            </div>
+            <div class="topbar-right">
+                <span class="badge badge-primary">Super Admin</span>
+                <span class="d-none d-sm-inline" style="font-size:.85rem;font-weight:600;color:var(--neutral-700)">{{ Auth::user()->name ?? 'Super Admin' }}</span>
+            </div>
+        </nav>
+
+        <div class="page-content">
+            @if(session('success'))
+                <div class="alert alert-dismissible fade show d-flex align-items-center gap-2" role="alert" style="border-radius:var(--radius);border:none;border-left:4px solid var(--success);background:#d1fae5;color:#065f46;padding:12px 16px;font-size:.82rem;font-weight:500">
+                    <i class="bi bi-check-circle-fill" style="font-size:1.1rem;flex-shrink:0"></i>
+                    <span style="flex:1">{{ session('success') }}</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" style="font-size:.75rem"></button>
                 </div>
-            </header>
-
-            <main class="p-6">
-                @if(session('success'))
-                    <div class="mb-4 p-4 bg-green-100 border-l-4 border-green-500 text-green-700 rounded">
-                        {{ session('success') }}
-                    </div>
-                @endif
-
-                @yield('content')
-            </main>
+            @endif
+            @if(session('error'))
+                <div class="alert alert-dismissible fade show d-flex align-items-center gap-2" role="alert" style="border-radius:var(--radius);border:none;border-left:4px solid var(--danger);background:#fee2e2;color:#991b1b;padding:12px 16px;font-size:.82rem;font-weight:500">
+                    <i class="bi bi-exclamation-triangle-fill" style="font-size:1.1rem;flex-shrink:0"></i>
+                    <span style="flex:1">{{ session('error') }}</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" style="font-size:.75rem"></button>
+                </div>
+            @endif
+            @yield('content')
         </div>
     </div>
 
+    <!-- JS Dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <!-- Script Toggle Sidebar -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const toggleBtn = document.getElementById('sidebarToggle');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+
+            if (toggleBtn && sidebar && overlay) {
+                toggleBtn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    sidebar.classList.toggle('active');
+                    overlay.classList.toggle('active');
+                });
+
+                overlay.addEventListener('click', function () {
+                    sidebar.classList.remove('active');
+                    overlay.classList.remove('active');
+                });
+            }
+        });
+    </script>
 </body>
 </html>

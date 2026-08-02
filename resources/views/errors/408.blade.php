@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>404 - Halaman Tidak Ditemukan</title>
+    <title>408 - Waktu Habis</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -16,29 +16,18 @@
                 <i class="bi bi-bag-fill"></i>
                 <span>SchoolWear</span>
             </div>
-            <div class="error-icon" style="background:var(--primary-lighter);color:var(--primary)">
-                <i class="bi bi-compass"></i>
+            <div class="error-icon" style="background:#fef3c7;color:var(--warning)">
+                <i class="bi bi-clock-history"></i>
             </div>
-            <div class="error-code" style="color:var(--primary)">404</div>
-            <h2>Halaman Tidak Ditemukan</h2>
-            <p>Maaf, halaman yang kamu cari tidak ada atau telah dipindahkan. Coba buka halaman lain di bawah ini:</p>
+            <div class="error-code" style="color:var(--warning)">408</div>
+            <h2>Waktu Habis</h2>
+            <p>Permintaan kamu memakan waktu terlalu lama. Silakan coba lagi dengan koneksi yang lebih stabil.</p>
             <div class="error-actions">
                 <a href="{{ url('/') }}" class="btn-primary-custom">
                     <i class="bi bi-house"></i> Kembali ke Beranda
                 </a>
                 <a href="javascript:history.back()" class="btn-outline-custom">
                     <i class="bi bi-arrow-left"></i> Kembali ke Halaman Sebelumnya
-                </a>
-            </div>
-            <div class="error-links">
-                <a href="{{ url('/') }}">
-                    <i class="bi bi-house"></i> Beranda
-                </a>
-                <a href="{{ route('login.siswa') }}">
-                    <i class="bi bi-bag"></i> Katalog Produk
-                </a>
-                <a href="{{ url('/') }}#fitur">
-                    <i class="bi bi-envelope"></i> Hubungi Kami
                 </a>
             </div>
         </div>

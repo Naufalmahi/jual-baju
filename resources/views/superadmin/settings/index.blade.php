@@ -4,205 +4,83 @@
 @section('page_title', 'Pengaturan Sistem & Koperasi')
 
 @section('content')
-
-@if(session('success'))
-    <div class="mb-6 p-4 bg-emerald-100 border-l-4 border-emerald-500 text-emerald-800 rounded-lg shadow-sm flex items-center justify-between">
-        <div class="flex items-center gap-2 text-sm font-medium">
-            <i class="fas fa-check-circle text-emerald-600 text-lg"></i>
-            <span>{{ session('success') }}</span>
-        </div>
-        <button onclick="this.parentElement.remove()" class="text-emerald-700 hover:text-emerald-900 text-xs">
-            <i class="fas fa-times"></i>
-        </button>
-    </div>
-@endif
-
 <form action="{{ route('superadmin.settings.update') }}" method="POST" enctype="multipart/form-data">
     @csrf
-
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-        <!-- KOLOM KIRI & TENGAH (2/3) -->
-        <div class="lg:col-span-2 space-y-6">
-            
-            <!-- CARD 1: INFORMASI SEKOLAH & KOPERASI -->
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 border-t-4 border-indigo-600">
-                <div class="flex items-center gap-3 mb-4 border-b border-gray-100 pb-3">
-                    <div class="w-9 h-9 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-school text-base"></i>
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <!-- Profil Sekolah -->
+            <div class="card-custom mb-4" data-aos="fade-up" style="border-top:3px solid var(--primary)">
+                <div class="card-body-custom">
+                    <div class="d-flex align-items-center gap-3 mb-4 pb-3" style="border-bottom:1px solid var(--neutral-100)">
+                        <div class="stat-icon stat-icon-primary" style="width:40px;height:40px"><i class="bi bi-building"></i></div>
+                        <div><h6 class="fw-bold mb-0" style="font-size:.85rem">Profil Sekolah & Koperasi</h6><span style="font-size:.7rem;color:var(--neutral-400)">Identitas lembaga untuk laporan & struk</span></div>
                     </div>
-                    <div>
-                        <h3 class="font-bold text-gray-800 text-sm">Profil Sekolah & Koperasi</h3>
-                        <p class="text-[11px] text-gray-400">Identitas lembaga yang akan dicetak di laporan & struk</p>
+                    <div class="mb-3"><label class="form-label-custom">Nama Koperasi / Toko Sekolah</label><input type="text" name="school_name" value="{{ $settings['school_name'] ?? '' }}" class="form-control-custom w-100"></div>
+                    <div class="row g-3">
+                        <div class="col-md-6"><label class="form-label-custom">No. Telepon / WA</label><input type="text" name="school_phone" value="{{ $settings['school_phone'] ?? '' }}" class="form-control-custom w-100"></div>
+                        <div class="col-md-6"><label class="form-label-custom">Email Resmi</label><input type="email" name="school_email" value="{{ $settings['school_email'] ?? '' }}" class="form-control-custom w-100"></div>
                     </div>
+                    <div class="mt-3"><label class="form-label-custom">Alamat Lengkap</label><textarea name="school_address" rows="2" class="form-control-custom w-100">{{ $settings['school_address'] ?? '' }}</textarea></div>
                 </div>
+            </div>
 
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1">Nama Koperasi / Toko Sekolah</label>
-                        <input type="text" name="school_name" value="{{ $settings['school_name'] ?? '' }}" placeholder="Contoh: Koperasi Mandiri SMKN 1" class="w-full border border-gray-300 rounded-lg p-2.5 text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+            <!-- Kebijakan Pembayaran -->
+            <div class="card-custom mb-4" data-aos="fade-up" style="border-top:3px solid var(--success)">
+                <div class="card-body-custom">
+                    <div class="d-flex align-items-center gap-3 mb-4 pb-3" style="border-bottom:1px solid var(--neutral-100)">
+                        <div class="stat-icon stat-icon-success" style="width:40px;height:40px"><i class="bi bi-cash-register"></i></div>
+                        <div><h6 class="fw-bold mb-0" style="font-size:.85rem">Kebijakan Pembayaran & Kasir</h6><span style="font-size:.7rem;color:var(--neutral-400)">Aturan batasan kredit dan fitur kasir</span></div>
                     </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-bold text-gray-700 mb-1">Nomor Telepon / WA Koperasi</label>
-                            <input type="text" name="school_phone" value="{{ $settings['school_phone'] ?? '' }}" placeholder="081234567890" class="w-full border border-gray-300 rounded-lg p-2.5 text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-gray-700 mb-1">Email Resmi Koperasi</label>
-                            <input type="email" name="school_email" value="{{ $settings['school_email'] ?? '' }}" placeholder="koperasi@smkn1.sch.id" class="w-full border border-gray-300 rounded-lg p-2.5 text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                        </div>
+                    <div class="row g-3">
+                        <div class="col-md-6"><label class="form-label-custom">Batas Maksimal Kasbon (Rp)</label><input type="number" name="max_debt_limit" value="{{ $settings['max_debt_limit'] ?? '50000' }}" class="form-control-custom w-100"><p style="font-size:.65rem;color:var(--neutral-400);margin-top:4px">Set 0 jika tidak mengizinkan kasbon.</p></div>
+                        <div class="col-md-6"><label class="form-label-custom">Batas Warning Stok</label><input type="number" name="stock_warning_limit" value="{{ $settings['stock_warning_limit'] ?? '5' }}" class="form-control-custom w-100"><p style="font-size:.65rem;color:var(--neutral-400);margin-top:4px">Peringatan jika stok di bawah angka ini.</p></div>
                     </div>
-
-                    <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1">Alamat Lengkap Koperasi/Sekolah</label>
-                        <textarea name="school_address" rows="2" class="w-full border border-gray-300 rounded-lg p-2.5 text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="Jl. Raya Pendidikan No. 45...">{{ $settings['school_address'] ?? '' }}</textarea>
+                    <div class="row g-3 mt-2">
+                        <div class="col-sm-6"><label class="d-flex align-items-center gap-2 p-2" style="border:1px solid var(--neutral-200);border-radius:var(--radius-sm);cursor:pointer"><input type="checkbox" name="enable_qris" value="1" {{ ($settings['enable_qris'] ?? '1') == '1' ? 'checked' : '' }}><div><span class="d-block fw-bold" style="font-size:.8rem">Terima QRIS / E-Wallet</span><span class="d-block" style="font-size:.65rem;color:var(--neutral-400)">Tampilkan opsi QRIS saat checkout</span></div></label></div>
+                        <div class="col-sm-6"><label class="d-flex align-items-center gap-2 p-2" style="border:1px solid var(--neutral-200);border-radius:var(--radius-sm);cursor:pointer"><input type="checkbox" name="allow_debt" value="1" {{ ($settings['allow_debt'] ?? '0') == '1' ? 'checked' : '' }}><div><span class="d-block fw-bold" style="font-size:.8rem">Izinkan Kasbon Siswa</span><span class="d-block" style="font-size:.65rem;color:var(--neutral-400)">Kasir bisa mencatat transaksi hutang</span></div></label></div>
                     </div>
                 </div>
             </div>
 
-            <!-- CARD 2: ATURAN TRANSAKSI & PEMBAYARAN (BARU) -->
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 border-t-4 border-emerald-600">
-                <div class="flex items-center gap-3 mb-4 border-b border-gray-100 pb-3">
-                    <div class="w-9 h-9 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-cash-register text-base"></i>
+            <!-- Struk -->
+            <div class="card-custom" data-aos="fade-up" style="border-top:3px solid var(--accent)">
+                <div class="card-body-custom">
+                    <div class="d-flex align-items-center gap-3 mb-4 pb-3" style="border-bottom:1px solid var(--neutral-100)">
+                        <div class="stat-icon stat-icon-warning" style="width:40px;height:40px"><i class="bi bi-receipt"></i></div>
+                        <div><h6 class="fw-bold mb-0" style="font-size:.85rem">Pengaturan Struk Cetak</h6><span style="font-size:.7rem;color:var(--neutral-400)">Pesan penutup struk thermal</span></div>
                     </div>
-                    <div>
-                        <h3 class="font-bold text-gray-800 text-sm">Kebijakan Pembayaran & Kasir</h3>
-                        <p class="text-[11px] text-gray-400">Aturan batasan kredit dan fitur kasir</p>
-                    </div>
-                </div>
-
-                <div class="space-y-4">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-bold text-gray-700 mb-1">Batas Maksimal Kasbon / Hutang Siswa (Rp)</label>
-                            <input type="number" name="max_debt_limit" value="{{ $settings['max_debt_limit'] ?? '50000' }}" placeholder="50000" class="w-full border border-gray-300 rounded-lg p-2.5 text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none">
-                            <p class="text-[10px] text-gray-400 mt-1">Set 0 jika tidak mengizinkan kasbon/hutang sama sekali.</p>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-gray-700 mb-1">Batas Minimal Warning Stok Barang</label>
-                            <input type="number" name="stock_warning_limit" value="{{ $settings['stock_warning_limit'] ?? '5' }}" placeholder="5" class="w-full border border-gray-300 rounded-lg p-2.5 text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none">
-                            <p class="text-[10px] text-gray-400 mt-1">Sistem akan memberi peringatan jika stok di bawah angka ini.</p>
-                        </div>
-                    </div>
-
-                    <!-- TOGGLE ATURAN PEMBAYARAN -->
-                    <div class="pt-2 border-t border-gray-100 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <label class="flex items-center gap-3 p-2 border rounded-lg cursor-pointer hover:bg-gray-50">
-                            <input type="checkbox" name="enable_qris" value="1" {{ ($settings['enable_qris'] ?? '1') == '1' ? 'checked' : '' }} class="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500">
-                            <div>
-                                <span class="block text-xs font-bold text-gray-700">Terima QRIS / E-Wallet</span>
-                                <span class="block text-[10px] text-gray-400">Tampilkan opsi QRIS saat checkout</span>
-                            </div>
-                        </label>
-
-                        <label class="flex items-center gap-3 p-2 border rounded-lg cursor-pointer hover:bg-gray-50">
-                            <input type="checkbox" name="allow_debt" value="1" {{ ($settings['allow_debt'] ?? '0') == '1' ? 'checked' : '' }} class="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500">
-                            <div>
-                                <span class="block text-xs font-bold text-gray-700">Izinkan Kasbon Siswa</span>
-                                <span class="block text-[10px] text-gray-400">Kasir bisa mencatat transaksi hutang</span>
-                            </div>
-                        </label>
-                    </div>
+                    <div class="mb-3"><label class="form-label-custom">Footer Struk Baris 1</label><input type="text" name="receipt_footer_1" value="{{ $settings['receipt_footer_1'] ?? 'Terima Kasih Atas Kunjungan Anda!' }}" class="form-control-custom w-100"></div>
+                    <div class="mb-3"><label class="form-label-custom">Footer Struk Baris 2</label><input type="text" name="receipt_footer_2" value="{{ $settings['receipt_footer_2'] ?? 'Barang yang sudah dibeli tidak dapat dikembalikan.' }}" class="form-control-custom w-100"></div>
                 </div>
             </div>
-
-            <!-- CARD 3: FORMAT & PESAN STRUK -->
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 border-t-4 border-amber-500">
-                <div class="flex items-center gap-3 mb-4 border-b border-gray-100 pb-3">
-                    <div class="w-9 h-9 bg-amber-50 text-amber-600 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-receipt text-base"></i>
-                    </div>
-                    <div>
-                        <h3 class="font-bold text-gray-800 text-sm">Pengaturan Struk Cetak / Thermal</h3>
-                        <p class="text-[11px] text-gray-400">Pesan penutup di bagian bawah nota cetak</p>
-                    </div>
-                </div>
-
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1">Pesan Footer Struk Baris 1</label>
-                        <input type="text" name="receipt_footer_1" value="{{ $settings['receipt_footer_1'] ?? 'Terima Kasih Atas Kunjungan Anda!' }}" class="w-full border border-gray-300 rounded-lg p-2.5 text-xs focus:ring-2 focus:ring-amber-500 focus:outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1">Pesan Footer Struk Baris 2 (Ketentuan Retur)</label>
-                        <input type="text" name="receipt_footer_2" value="{{ $settings['receipt_footer_2'] ?? 'Barang yang sudah dibeli tidak dapat dikembalikan.' }}" class="w-full border border-gray-300 rounded-lg p-2.5 text-xs focus:ring-2 focus:ring-amber-500 focus:outline-none">
-                    </div>
-                </div>
-            </div>
-
         </div>
 
-        <!-- KOLOM KANAN (1/3) -->
-        <div class="space-y-6">
-            
-            <!-- CARD 4: UPLOAD LOGO -->
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 border-t-4 border-blue-600">
-                <div class="flex items-center gap-3 mb-4 border-b border-gray-100 pb-3">
-                    <div class="w-9 h-9 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-image text-base"></i>
-                    </div>
-                    <div>
-                        <h3 class="font-bold text-gray-800 text-sm">Logo Sekolah / Koperasi</h3>
-                        <p class="text-[11px] text-gray-400">Format PNG/JPG (Maks. 2MB)</p>
-                    </div>
-                </div>
-
-                <div class="text-center mb-4">
+        <div class="col-lg-4">
+            <!-- Logo -->
+            <div class="card-custom mb-4" data-aos="fade-up" style="border-top:3px solid var(--info)">
+                <div class="card-body-custom text-center">
+                    <h6 class="fw-bold mb-3" style="font-size:.85rem">Logo Sekolah / Koperasi</h6>
                     @if(!empty($settings['app_logo']))
-                        <img src="{{ asset('storage/' . $settings['app_logo']) }}" alt="Logo App" class="w-28 h-28 object-contain mx-auto border rounded-xl p-2 bg-gray-50 shadow-inner">
+                        <img src="{{ asset('storage/' . $settings['app_logo']) }}" alt="Logo" class="mb-3" style="width:100px;height:100px;object-fit:contain;border:1px solid var(--neutral-200);border-radius:var(--radius);padding:8px;background:var(--neutral-50)">
                     @else
-                        <div class="w-28 h-28 bg-gray-50 text-gray-400 rounded-xl flex items-center justify-center mx-auto border-2 border-dashed border-gray-300">
-                            <i class="fas fa-school text-4xl"></i>
-                        </div>
+                        <div class="mx-auto mb-3" style="width:100px;height:100px;border:2px dashed var(--neutral-300);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;color:var(--neutral-400)"><i class="bi bi-building" style="font-size:2rem"></i></div>
                     @endif
-                </div>
-
-                <div>
-                    <input type="file" name="app_logo" accept="image/*" class="block w-full text-xs text-gray-500 file:mr-2 file:py-2 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer border border-gray-200 rounded-lg p-1">
+                    <input type="file" name="app_logo" accept="image/*" class="form-control-custom w-100" style="font-size:.75rem">
                 </div>
             </div>
 
-            <!-- CARD 5: PAJAK & POIN SISWA -->
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 border-t-4 border-purple-600">
-                <div class="flex items-center gap-3 mb-4 border-b border-gray-100 pb-3">
-                    <div class="w-9 h-9 bg-purple-50 text-purple-600 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-coins text-base"></i>
-                    </div>
-                    <div>
-                        <h3 class="font-bold text-gray-800 text-sm">Pajak & Reward</h3>
-                        <p class="text-[11px] text-gray-400">Konfigurasi PPN dan Poin Belanja</p>
-                    </div>
-                </div>
-
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1">Pajak Pertambahan Nilai / PPN (%)</label>
-                        <div class="relative">
-                            <input type="number" step="0.1" name="tax_percentage" value="{{ $settings['tax_percentage'] ?? '0' }}" placeholder="0" class="w-full border border-gray-300 rounded-lg p-2.5 text-xs focus:ring-2 focus:ring-purple-500 focus:outline-none pr-8">
-                            <span class="absolute right-3 top-2.5 text-xs text-gray-400 font-bold">%</span>
-                        </div>
-                        <p class="text-[10px] text-gray-400 mt-1">Set 0 jika transaksi tidak dikenakan PPN.</p>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1">Minimal Belanja Dapatkan 1 Poin (Rp)</label>
-                        <input type="number" name="point_multiplier" value="{{ $settings['point_multiplier'] ?? '10000' }}" placeholder="10000" class="w-full border border-gray-300 rounded-lg p-2.5 text-xs focus:ring-2 focus:ring-purple-500 focus:outline-none">
-                        <p class="text-[10px] text-gray-400 mt-1">Set 0 jika fitur poin tidak diaktifkan.</p>
-                    </div>
-
-                    <div class="pt-4 border-t border-gray-100">
-                        <button type="submit" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl transition flex items-center justify-center gap-2 shadow-md hover:shadow-lg">
-                            <i class="fas fa-save"></i> Simpan Semua Pengaturan
-                        </button>
+            <!-- Pajak & Poin -->
+            <div class="card-custom" data-aos="fade-up" style="border-top:3px solid #8b5cf6">
+                <div class="card-body-custom">
+                    <h6 class="fw-bold mb-3" style="font-size:.85rem">Pajak & Reward</h6>
+                    <div class="mb-3"><label class="form-label-custom">PPN (%)</label><input type="number" step="0.1" name="tax_percentage" value="{{ $settings['tax_percentage'] ?? '0' }}" class="form-control-custom w-100"><p style="font-size:.65rem;color:var(--neutral-400);margin-top:4px">Set 0 jika tidak dikenakan PPN.</p></div>
+                    <div class="mb-3"><label class="form-label-custom">Minimal Belanja 1 Poin (Rp)</label><input type="number" name="point_multiplier" value="{{ $settings['point_multiplier'] ?? '10000' }}" class="form-control-custom w-100"><p style="font-size:.65rem;color:var(--neutral-400);margin-top:4px">Set 0 jika fitur poin tidak aktif.</p></div>
+                    <div class="pt-3" style="border-top:1px solid var(--neutral-100)">
+                        <button type="submit" class="btn-primary-custom w-100 justify-center"><i class="bi bi-save"></i> Simpan Semua Pengaturan</button>
                     </div>
                 </div>
             </div>
-
         </div>
-
     </div>
 </form>
-
 @endsection

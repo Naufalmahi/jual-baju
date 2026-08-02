@@ -1,39 +1,39 @@
 @extends('layouts.siswa')
 
+@section('title', 'Riwayat Transaksi')
+@section('page_title', 'Riwayat Transaksi')
+
 @section('content')
-<div class="mb-6">
-    <h2 class="text-2xl font-bold text-gray-900">Riwayat Transaksi</h2>
-    <p class="text-gray-500 text-sm">Daftar transaksi baju seragam yang telah selesai kamu ambil</p>
+<div class="mb-5" data-aos="fade-up">
+    <h4 class="fw-bold">Riwayat Transaksi</h4>
+    <p style="font-size:.85rem;color:var(--neutral-500)">Daftar transaksi baju seragam yang telah selesai kamu ambil</p>
 </div>
 
-<div class="space-y-4">
+<div class="d-flex flex-column gap-3">
     @forelse($orders as $order)
-        <div class="bg-white p-6 rounded-2xl border border-brand-200 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div>
-                <div class="flex items-center gap-3 mb-2">
-                    <span class="font-bold text-brand-800 text-base">#{{ $order->order_code }}</span>
-                    <span class="px-3 py-1 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-800">
-                        {{ $order->status }}
-                    </span>
-                    <span class="text-xs text-gray-400 uppercase font-semibold">({{ $order->payment_method }})</span>
+    <div class="card-custom" data-aos="fade-up">
+        <div class="card-body-custom">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+                <div>
+                    <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+                        <span class="fw-bold" style="color:var(--primary);font-size:.95rem">#{{ $order->order_code }}</span>
+                        <span class="badge badge-success">{{ $order->status }}</span>
+                        <span style="font-size:.7rem;color:var(--neutral-400);text-transform:uppercase;font-weight:600">({{ $order->payment_method }})</span>
+                    </div>
+                    <div style="font-size:.8rem;color:var(--neutral-500)">
+                        <div>Tanggal Selesai: {{ $order->updated_at ? $order->updated_at->translatedFormat('d F Y, H:i') : '-' }}</div>
+                        <div>Total Transaksi: <span class="fw-bold" style="color:var(--neutral-800)">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</span></div>
+                    </div>
                 </div>
-                <div class="text-xs text-gray-500 space-y-1">
-                    <p>Tanggal Selesai: {{ $order->updated_at ? $order->updated_at->translatedFormat('d F Y, H:i') : '-' }}</p>
-                    <p>Total Transaksi: <span class="font-bold text-gray-900 text-sm">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</span></p>
-                </div>
-            </div>
-
-            <div class="flex items-center gap-3">
-                <span class="text-xs text-emerald-700 font-semibold bg-emerald-50 px-3 py-2 rounded-xl border border-emerald-200">
-                    <i class="fa-solid fa-circle-check mr-1"></i> Baju Sudah Diambil
-                </span>
+                <span class="badge badge-success" style="padding:8px 14px;font-size:.75rem"><i class="bi bi-check-circle me-1"></i> Baju Sudah Diambil</span>
             </div>
         </div>
+    </div>
     @empty
-        <div class="bg-white p-12 rounded-2xl border border-brand-200 text-center">
-            <i class="fa-solid fa-receipt text-4xl text-gray-300 mb-3"></i>
-            <p class="text-gray-500 font-medium">Belum ada riwayat transaksi yang selesai.</p>
-        </div>
+    <div class="card-custom text-center" style="padding:48px">
+        <i class="bi bi-receipt" style="font-size:3rem;color:var(--neutral-300);margin-bottom:12px;display:block"></i>
+        <p style="color:var(--neutral-500)">Belum ada riwayat transaksi yang selesai.</p>
+    </div>
     @endforelse
 </div>
 @endsection
