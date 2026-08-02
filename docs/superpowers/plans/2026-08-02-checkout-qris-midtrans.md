@@ -72,3 +72,10 @@
 - Jalankan `php artisan test` penuh; perbaiki hingga hijau.
 - Self-review kode vs desain; jalankan `php artisan route:list` untuk memastikan route bersih.
 - Commit per task (gaya repo, pesan Bahasa Indonesia).
+
+## Catatan Implementasi (deviasi dari plan)
+- `phpunit.xml`: `DB_DATABASE=jual_baju_test` (MySQL terpisah dari DB dev) + `.env.testing` dibuat (gitignored). DB test dibuat via mysql CLI dan di-pre-migrate.
+- `UserFactory` diperbaiki: menghapus `email`/`email_verified_at` dari definition karena tabel `users` tidak punya kolom tersebut (factory bawaan error 42S22 di test). Sekarang `username` + `name` + password.
+- `ExampleTest` bawaan dihapus dan diganti test sungguhan (design F).
+- JS auto-poll di `orders/index.blade.php` menggunakan endpoint `check-status`; tombol "Periksa Status Pembayaran" ditampilkan juga saat QRIS nonaktif (agar siswa tetap bisa cek pesanan qris lama).
+- `payQris` & `checkStatus` memakai `app(MidtransService::class)` (container) agar bisa di-mock di test, bukan `new MidtransService()`.
