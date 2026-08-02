@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Siswa;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class ProfileController extends Controller
 {
@@ -23,29 +24,8 @@ class ProfileController extends Controller
         $user = Auth::user();
 
         if ($request->hasFile('photo') && $request->file('photo')->isValid()) {
-            $file = $request->file('photo');
-            $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-            $relativePath = 'profile-photos/' . $filename;
-
-            // Folder penyimpanan publik langsung
-            $publicDir = public_path('storage/profile-photos');
-            $storageDir = storage_path('app/public/profile-photos');
-
-            if (!file_exists($publicDir)) {
-                mkdir($publicDir, 0777, true);
-            }
-            if (!file_exists($storageDir)) {
-                mkdir($storageDir, 0777, true);
-            }
-
-            // Pindahkan file langsung ke public storage
-            $file->move($publicDir, $filename);
-
-            // Backup copy ke storage app
-            @copy($publicDir . '/' . $filename, $storageDir . '/' . $filename);
-
-            // Update database
-            $user->update(['foto' => $relativePath]);
+            $path = $request->file('photo')->store('profile-photos', 'public');
+            $user->update(['foto' => $path]);
         }
 
         return back()->with('success', 'Foto profil berhasil diperbarui!');
