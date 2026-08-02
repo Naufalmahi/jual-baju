@@ -7,10 +7,12 @@ use App\Models\Cart;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class CheckoutController extends Controller
 {
@@ -64,13 +66,17 @@ class CheckoutController extends Controller
             $totalAmount = $items->sum('subtotal');
         }
 
-        return view('siswa.checkout.index', compact('items', 'totalAmount'));
+        $qrisEnabled = Setting::where('key', 'enable_qris')->value('value') !== '0';
+
+        return view('siswa.checkout.index', compact('items', 'totalAmount', 'qrisEnabled'));
     }
 
     public function store(Request $request)
     {
+        $qrisEnabled = Setting::where('key', 'enable_qris')->value('value') !== '0';
+
         $request->validate([
-            'payment_method' => 'required|in:cash,qris',
+            'payment_method' => ['required', Rule::in($qrisEnabled ? ['cash', 'qris'] : ['cash'])],
         ]);
 
         $userId = Auth::id();
@@ -160,6 +166,15 @@ class CheckoutController extends Controller
             }
 
             Cart::where('user_id', $userId)->delete();
+        }
+
+        // If AJAX request for QRIS, return JSON with order ID
+        if ($request->wantsJson() && $request->payment_method === 'qris') {
+            return response()->json([
+                'success' => true,
+                'order_id' => $order->id,
+                'order_code' => $order->order_code,
+            ]);
         }
 
         return redirect()->route('siswa.orders.index')->with(

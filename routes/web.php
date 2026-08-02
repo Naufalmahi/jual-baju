@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\HomeController;
 
 // Controller Super Admin
 use App\Http\Controllers\SuperAdmin\DashboardController;
@@ -40,8 +41,8 @@ use App\Http\Middleware\CheckSystemMaintenance;
 |--------------------------------------------------------------------------
 */
 
-// Default URL (/) langsung ke Halaman Login Siswa
-Route::get('/', [AuthController::class, 'showLoginSiswa'])->name('login');
+// Public Home Page
+Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // Portal Login Siswa (Throttle: Max 5 percobaan per menit)
 Route::get('/login-siswa', [AuthController::class, 'showLoginSiswa'])->name('login.siswa');
@@ -141,6 +142,11 @@ Route::middleware(['auth', 'role:admin', CheckSystemMaintenance::class . ':admin
         Route::resource('products', ProductController::class)
             ->except(['create', 'edit', 'show'])
             ->whereNumber('product');
+        Route::get('products/{id}/print-barcode', [ProductController::class, 'printBarcode'])
+            ->whereNumber('id')
+            ->name('products.print-barcode');
+        Route::get('products/print-bulk', [ProductController::class, 'printBulkBarcodes'])
+            ->name('products.print-bulk');
     });
 
     Route::middleware([CheckSystemMaintenance::class . ':classes'])->group(function () {
@@ -248,9 +254,15 @@ Route::middleware(['auth', 'role:siswa', CheckSystemMaintenance::class . ':siswa
         Route::post('/orders/{order}/pay-qris', [SiswaOrderController::class, 'payQris'])
             ->whereNumber('order')
             ->name('orders.payQris');
+        Route::post('/orders/{order}/check-status', [SiswaOrderController::class, 'checkStatus'])
+            ->whereNumber('order')
+            ->name('orders.checkStatus');
 
         // 6. Riwayat Pesanan Selesai
         Route::get('/orders/history', [SiswaOrderController::class, 'history'])->name('orders.history');
+        Route::get('/orders/success/{order}', [SiswaOrderController::class, 'success'])
+            ->whereNumber('order')
+            ->name('orders.success');
 
         // 7. Profil Saya & Ubah Foto
         Route::get('/profile', [SiswaProfileController::class, 'index'])->name('profile.index');

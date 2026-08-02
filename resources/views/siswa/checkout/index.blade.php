@@ -1,88 +1,158 @@
 @extends('layouts.siswa')
 
+@section('title', 'Checkout Pesanan')
+@section('page_title', 'Checkout')
+
 @section('content')
-<div class="mb-6">
-    <h2 class="text-2xl font-bold text-gray-900">Checkout Pesanan</h2>
-    <p class="text-gray-500 text-sm">Periksa pesanan kamu dan pilih metode pembayaran</p>
+<div class="mb-4" data-aos="fade-up">
+    <h4 class="fw-bold" style="font-size:1.2rem">Checkout Pesanan</h4>
+    <p style="font-size:.82rem;color:var(--neutral-500)">Periksa pesanan kamu dan pilih metode pembayaran</p>
 </div>
 
-<form action="{{ route('siswa.checkout.store') }}" method="POST">
+<form action="{{ route('siswa.checkout.store') }}" method="POST" id="paymentForm">
     @csrf
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <!-- ITEM RINGKASAN & METODE PEMBAYARAN -->
-        <div class="lg:col-span-2 space-y-6">
-            <!-- DAFTAR ITEM SINKRON -->
-            <div class="bg-white p-6 rounded-2xl border border-brand-200 shadow-sm">
-                <h3 class="font-bold text-base text-gray-900 mb-4">Item Yang Dibeli</h3>
-                <div class="divide-y divide-gray-100">
-                    @foreach($items as $item)
-                        <div class="py-4 flex justify-between items-center">
-                            <div>
-                                <h4 class="font-bold text-gray-900 text-base">{{ $item->product->name }}</h4>
-                                <p class="text-xs text-gray-500 mt-1">
-                                    Ukuran: <span class="font-bold text-brand-800">{{ $item->size }}</span> | 
-                                    <span class="font-bold text-gray-700">{{ $item->quantity }} Pcs</span> x Rp {{ number_format($item->price, 0, ',', '.') }}
-                                </p>
-                            </div>
-                            <span class="font-extrabold text-brand-800 text-base">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</span>
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="form-card mb-4" data-aos="fade-up">
+                <div class="form-card-title">Item Yang Dibeli</div>
+                @foreach($items as $item)
+                    <div class="d-flex justify-content-between align-items-center py-3 {{ !$loop->last ? 'border-bottom' : '' }}" style="border-color:var(--neutral-100) !important">
+                        <div>
+                            <h6 class="fw-bold mb-1" style="font-size:.88rem">{{ $item->product->name }}</h6>
+                            <div style="font-size:.75rem;color:var(--neutral-500)">Ukuran: <span class="fw-bold" style="color:var(--primary)">{{ $item->size }}</span> | <span class="fw-bold">{{ $item->quantity }} Pcs</span> x Rp {{ number_format($item->price, 0, ',', '.') }}</div>
                         </div>
-                    @endforeach
-                </div>
+                        <span class="fw-bold" style="color:var(--primary);font-size:.92rem">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</span>
+                    </div>
+                @endforeach
             </div>
 
-            <!-- PILIH METODE PEMBAYARAN -->
-            <div class="bg-white p-6 rounded-2xl border border-brand-200 shadow-sm">
-                <h3 class="font-bold text-base text-gray-900 mb-4">Pilih Metode Pembayaran</h3>
-                
-                <div class="space-y-3">
-                    <label class="flex items-center justify-between p-4 border border-gray-200 rounded-xl cursor-pointer hover:border-brand-800 transition">
-                        <div class="flex items-center gap-3">
-                            <input type="radio" name="payment_method" value="cash" checked class="text-brand-800 focus:ring-brand-800">
+            <div class="form-card" data-aos="fade-up">
+                <div class="form-card-title">Pilih Metode Pembayaran</div>
+                <div class="d-flex flex-column gap-3">
+                    <label class="d-flex align-items-center justify-content-between p-3" style="border:1.5px solid var(--neutral-200);border-radius:var(--radius);cursor:pointer;transition:var(--transition);background:var(--white)">
+                        <div class="d-flex align-items-center gap-3">
+                            <input type="radio" name="payment_method" value="cash" checked class="form-check-input" style="accent-color:var(--primary)">
                             <div>
-                                <p class="font-bold text-sm text-gray-900">Bayar Cash / Tunai</p>
-                                <p class="text-xs text-gray-500">Bayar langsung di kasir Koperasi saat mengambil baju seragam</p>
+                                <div class="fw-bold" style="font-size:.82rem">Bayar Cash / Tunai</div>
+                                <div style="font-size:.73rem;color:var(--neutral-500)">Bayar langsung di kasir Koperasi saat mengambil baju seragam</div>
                             </div>
                         </div>
-                        <i class="fa-solid fa-money-bill-wave text-xl text-emerald-700"></i>
+                        <i class="bi bi-cash-stack" style="font-size:1.3rem;color:var(--success)"></i>
                     </label>
-
-                    <label class="flex items-center justify-between p-4 border border-gray-200 rounded-xl cursor-pointer hover:border-brand-800 transition">
-                        <div class="flex items-center gap-3">
-                            <input type="radio" name="payment_method" value="qris" class="text-brand-800 focus:ring-brand-800">
+                    @if($qrisEnabled)
+                    <label class="d-flex align-items-center justify-content-between p-3" style="border:1.5px solid var(--neutral-200);border-radius:var(--radius);cursor:pointer;transition:var(--transition);background:var(--white)">
+                        <div class="d-flex align-items-center gap-3">
+                            <input type="radio" name="payment_method" value="qris" class="form-check-input" style="accent-color:var(--primary)">
                             <div>
-                                <p class="font-bold text-sm text-gray-900">QRIS Online (Midtrans)</p>
-                                <p class="text-xs text-gray-500">Scan QRIS pake GoPay, OVO, Dana, ShopeePay, atau Mobile Banking</p>
+                                <div class="fw-bold" style="font-size:.82rem">QRIS Online (Midtrans)</div>
+                                <div style="font-size:.73rem;color:var(--neutral-500)">Scan QRIS pake GoPay, OVO, Dana, ShopeePay, atau Mobile Banking</div>
                             </div>
                         </div>
-                        <i class="fa-solid fa-qrcode text-xl text-brand-800"></i>
+                        <i class="bi bi-qr-code" style="font-size:1.3rem;color:var(--primary)"></i>
                     </label>
+                    @endif
                 </div>
             </div>
         </div>
 
-        <!-- TOTAL TAGIHAN -->
-        <div class="bg-white p-6 rounded-2xl border border-brand-200 shadow-sm h-fit space-y-4">
-            <h3 class="font-bold text-lg text-gray-900 pb-3 border-b border-gray-100">Ringkasan Pembayaran</h3>
-
-            <div class="space-y-2 text-sm text-gray-600">
-                <div class="flex justify-between">
-                    <span>Subtotal Produk</span>
-                    <span>Rp {{ number_format($totalAmount, 0, ',', '.') }}</span>
-                </div>
-                <div class="flex justify-between text-xs text-gray-400">
-                    <span>Biaya Ambil di Koperasi</span>
-                    <span>Gratis</span>
-                </div>
-                <div class="flex justify-between pt-3 border-t border-gray-100 text-base font-bold text-gray-900">
-                    <span>Total Pembayaran</span>
-                    <span class="text-brand-800 text-lg">Rp {{ number_format($totalAmount, 0, ',', '.') }}</span>
+        <div class="col-lg-4">
+            <div class="card-custom" style="position:sticky;top:80px" data-aos="fade-up">
+                <div class="card-body-custom">
+                    <h6 class="fw-bold mb-3 pb-3" style="border-bottom:1px solid var(--neutral-100);font-size:.9rem">Ringkasan Pembayaran</h6>
+                    <div class="d-flex justify-content-between mb-2" style="font-size:.82rem;color:var(--neutral-600)">
+                        <span>Subtotal Produk</span>
+                        <span>Rp {{ number_format($totalAmount, 0, ',', '.') }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3" style="font-size:.73rem;color:var(--neutral-400)">
+                        <span>Biaya Ambil di Koperasi</span>
+                        <span>Gratis</span>
+                    </div>
+                    <div class="d-flex justify-content-between pt-3 mb-4" style="border-top:1px solid var(--neutral-100);font-size:.95rem">
+                        <span class="fw-bold">Total Pembayaran</span>
+                        <span class="fw-bold" style="color:var(--primary);font-size:1.05rem">Rp {{ number_format($totalAmount, 0, ',', '.') }}</span>
+                    </div>
+                    <button type="submit" class="btn-primary-custom w-100 justify-center" id="submitBtn" style="padding:14px;font-size:.88rem">
+                        <i class="bi bi-bag-check"></i> Buat Pesanan Sekarang
+                    </button>
+                    <div class="spinner-inline justify-content-center mt-2" id="loadingIndicator" style="display:none">
+                        <div class="spinner-custom"></div>
+                        <span>Memproses pesanan...</span>
+                    </div>
                 </div>
             </div>
-
-            <button type="submit" class="w-full py-3.5 bg-brand-800 text-white font-bold rounded-xl text-sm hover:bg-brand-900 transition shadow-sm">
-                Buat Pesanan Sekarang
-            </button>
         </div>
     </div>
 </form>
+
+<script src="{{ config('midtrans.snap_url') }}" data-client-key="{{ config('midtrans.client_key') }}"></script>
+<script>
+    const form = document.getElementById('paymentForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const loadingIndicator = document.getElementById('loadingIndicator');
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const paymentMethod = document.querySelector('input[name="payment_method"]:checked').value;
+        if (paymentMethod === 'cash') { 
+            form.submit(); 
+        } else if (paymentMethod === 'qris') { 
+            await handleQrisPayment(); 
+        }
+    });
+
+    async function handleQrisPayment() {
+        const originalText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.style.display = 'none';
+        loadingIndicator.style.display = 'flex';
+
+        try {
+            const csrfToken = document.querySelector('input[name="_token"]')?.value;
+            const formData = new FormData(form);
+            const createResponse = await fetch(form.action, { 
+                method: 'POST', 
+                body: formData, 
+                headers: { 
+                    'X-Requested-With': 'XMLHttpRequest', 
+                    'Accept': 'application/json' 
+                } 
+            });
+
+            if (!createResponse.ok) throw new Error('Order creation failed');
+            const orderData = await createResponse.json();
+            if (!orderData.success || !orderData.order_id) throw new Error(orderData.message || 'Gagal membuat pesanan');
+
+            const payResponse = await fetch(`/siswa/orders/${orderData.order_id}/pay-qris`, {
+                method: 'POST', 
+                headers: { 
+                    'Accept': 'application/json', 
+                    'X-CSRF-TOKEN': csrfToken, 
+                    'X-Requested-With': 'XMLHttpRequest' 
+                }
+            });
+
+            const payData = await payResponse.json();
+            if (!payData.success || !payData.data || !payData.data.token) throw new Error(payData.message || 'Token pembayaran tidak ditemukan');
+
+            loadingIndicator.style.display = 'none';
+            submitBtn.style.display = 'flex';
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+
+            snap.pay(payData.data.token, {
+                onSuccess: function() { window.location.href = '/siswa/orders/success/' + orderData.order_id; },
+                onPending: function() { window.location.href = '/siswa/orders'; },
+                onError: function() { alert('Pembayaran gagal! Silakan coba lagi.'); },
+                onClose: function() {}
+            });
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Terjadi kesalahan: ' + error.message);
+            loadingIndicator.style.display = 'none';
+            submitBtn.style.display = 'flex';
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        }
+    }
+</script>
 @endsection

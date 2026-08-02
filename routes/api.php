@@ -17,3 +17,20 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+// Get latest order for current user (for payment flow)
+Route::middleware('auth:sanctum')->get('/user-latest-order', function (Request $request) {
+    $latestOrder = \App\Models\Order::where('user_id', $request->user()->id)
+        ->latest()
+        ->first();
+
+    return response()->json([
+        'order_id' => $latestOrder->id ?? null,
+    ]);
+});
+
+// Order Payment Webhook (Midtrans)
+Route::prefix('orders')->group(function () {
+    // Webhook from Midtrans (Public - No auth required)
+    Route::post('/webhook', [\App\Http\Controllers\Siswa\OrderController::class, 'webhook']);
+});
