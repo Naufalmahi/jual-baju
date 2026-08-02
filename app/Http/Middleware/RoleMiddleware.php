@@ -12,7 +12,9 @@ class RoleMiddleware
     public function handle(Request $request, Closure $next, ...$roles): Response
     {
         if (!Auth::check()) {
-            return redirect()->route('login');
+            return redirect()->route(
+                str_starts_with($request->path(), 'siswa') ? 'login.siswa' : 'login.petugas'
+            );
         }
 
         $user = Auth::user();
